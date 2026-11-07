@@ -42,6 +42,8 @@ from functools import cache
 from importlib import resources
 from pathlib import Path
 
+from playbook_tools.console import setup_streams
+
 # ─────────────────────────────────────────────────────────────
 # 1. Règles du format
 # ─────────────────────────────────────────────────────────────
@@ -450,6 +452,7 @@ def run_checks(root: Path, today: date | None = None) -> tuple[list[Document], l
 
 def main(argv: list[str] | None = None) -> int:
     """Codes de retour : 0 = tout est valide, 1 = au moins un problème, 2 = mauvais usage."""
+    setup_streams()
     parser = argparse.ArgumentParser(
         prog="playbook-check",
         description="Vérifie les fiches, la parité FR/EN et les liens de la documentation.",

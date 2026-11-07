@@ -20,7 +20,7 @@ license = "MIT"
 authors = [{ name = "Aïcha Imène Dahoumane" }]
 keywords = ["incident-response", "playbook", "soc", "blue-team", "nist-800-61", "mitre-attack"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
     "Natural Language :: French",
@@ -44,6 +44,8 @@ Changelog = "https://github.com/Aiyeesha/incident-response-playbook/blob/main/CH
 # Commande installée : « playbook-check » vérifie toute la documentation
 [project.scripts]
 playbook-check = "playbook_tools.check:main"
+# « playbook-export » produit les actions à cocher au format JSON (une langue à la fois)
+playbook-export = "playbook_tools.export:main"
 
 # ─────────────────────────────────────────────────────────────
 # 3. Emplacement du code et version

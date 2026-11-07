@@ -6,9 +6,9 @@ Procédures de réponse aux incidents de cybersécurité, **directement utilisab
 pour chaque type d'incident, qui fait quoi, dans quel ordre, avec quelles preuves à préserver
 et quelles obligations à respecter.
 
-> 🚧 **En cours de construction** (v0.1.0 — ossature). Les playbooks arrivent aux étapes 2 à 5.
+**v1.0.0** — 7 playbooks, 6 documents de référence, 4 modèles, en français et en anglais, vérifiés en CI.
 
-## Ce que contiendra le dépôt
+## Ce que contient le dépôt
 
 | Dossier | Contenu |
 |---|---|
@@ -16,7 +16,7 @@ et quelles obligations à respecter.
 | `…/playbooks/` | P01 à P07 : procédures pas à pas, par type d'incident |
 | `…/docs/` | Gravité et délais, escalade, matrice RACI, cadre réglementaire, preuves, exercice sur table |
 | `…/templates/` | Rapport d'incident, post-mortem, communication de crise, registre de preuves |
-| [`src/playbook_tools/`](src/playbook_tools/) | Outil de vérification `playbook-check` (et, à l'étape 7, export JSON) |
+| [`src/playbook_tools/`](src/playbook_tools/) | Outil de vérification `playbook-check` et export JSON `playbook-export` |
 
 ## Référentiels
 
@@ -35,8 +35,8 @@ et quelles obligations à respecter.
 | 3 | Playbooks P01 à P03 : logiciel malveillant, rançongiciel, fuite de données | ✅ |
 | 4 | Playbooks P04 à P07 : hameçonnage, accès non autorisé, déni de service, compte compromis | ✅ |
 | 5 | Modèles et exercice sur table | ✅ |
-| 6 | Version anglaise complète | ⏳ |
-| 7 | Export JSON des listes d'actions → **v1.0.0** | ⏳ |
+| 6 | Version anglaise complète | ✅ |
+| 7 | Export JSON des listes d'actions → **v1.0.0** | ✅ |
 
 ## Le format d'un document
 
@@ -75,7 +75,42 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 playbook-check          # vérifie la documentation
-pytest -v               # teste l'outil de vérification
+playbook-export --lang fr -o playbooks.fr.json   # exporte les actions à cocher
+pytest -v               # teste les outils
+```
+
+## Export JSON
+
+`playbook-export` transforme les playbooks d'une langue en un document JSON structuré, prêt à
+être chargé dans un outil de ticketing, un tableau de bord SOC ou un suivi d'incidents :
+métadonnées, noms officiels des techniques MITRE ATT&CK et **actions à cocher regroupées par
+section**. L'export est **refusé** si `playbook-check` trouve le moindre problème : une liste
+incomplète n'est jamais diffusée. Les deux fichiers sont joints à chaque
+[version publiée](https://github.com/Aiyeesha/incident-response-playbook/releases).
+
+```powershell
+playbook-export --lang fr -o playbooks.fr.json
+```
+
+```json
+{
+  "schema_version": 1,
+  "tool_version": "1.0.0",
+  "attack_version": "20.1",
+  "lang": "fr",
+  "playbooks": [
+    {
+      "id": "P02",
+      "title": "Attaque par rançongiciel",
+      "severity": ["S1"],
+      "mitre": [{ "id": "T1486", "name": "Data Encrypted for Impact" }],
+      "source": "fr/playbooks/P02-rancongiciel.md",
+      "sections": [
+        { "number": 3, "title": "Confinement", "actions": ["Isoler toutes les machines touchées…"] }
+      ]
+    }
+  ]
+}
 ```
 
 ## Licence

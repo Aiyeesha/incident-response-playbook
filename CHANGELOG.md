@@ -6,7 +6,9 @@ versionnage [sémantique](https://semver.org/lang/fr/).
 Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playbook` en anglais et
 `playbook-reponse-incidents` en français), archivés en privé.
 
-## [Non publié]
+## [1.0.0] — 2026-11-07
+
+Première version stable.
 
 ### Ajouté
 - Ossature : documentation bilingue `fr/` et `en/` (playbooks, documents de référence, modèles).
@@ -47,3 +49,13 @@ Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playboo
   restitution).
 - D06 — exercice sur table : scénario de rançongiciel en 9 injections, délais légaux à surveiller et
   grille d'évaluation. D05 renvoie désormais au registre de preuves T04.
+- Version anglaise complète de toute la documentation (playbooks, documents, modèles, index).
+- Commande `playbook-export` : export JSON des playbooks d'une langue (métadonnées, noms officiels
+  des techniques MITRE ATT&CK, actions à cocher regroupées par section), refusé si `playbook-check`
+  trouve un problème. L'export des deux langues est vérifié en CI et joint à chaque version publiée.
+- P04 : signalement des SMS et appels indésirables au 33700, par transfert du SMS ou via le
+  formulaire de 33700.fr.
+
+### Corrigé
+- Accents illisibles dans la sortie des commandes sous Windows lorsqu'elle est redirigée vers un
+  fichier ou un autre programme : la sortie est désormais toujours écrite en UTF-8.
