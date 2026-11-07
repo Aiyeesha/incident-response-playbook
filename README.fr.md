@@ -1,5 +1,11 @@
 # Playbook de réponse aux incidents
 
+[![Vérifications](https://github.com/Aiyeesha/incident-response-playbook/actions/workflows/checks.yml/badge.svg)](https://github.com/Aiyeesha/incident-response-playbook/actions/workflows/checks.yml)
+![Python](https://img.shields.io/badge/python-3.11%20%7C%203.14-blue)
+![Dépendances](https://img.shields.io/badge/d%C3%A9pendances-aucune-brightgreen)
+![MITRE ATT&CK](https://img.shields.io/badge/MITRE%20ATT%26CK-20.1-red)
+![Licence](https://img.shields.io/badge/licence-MIT-green)
+
 🇬🇧 [English version](README.md)
 
 Procédures de réponse aux incidents de cybersécurité, **directement utilisables par une équipe** :
@@ -69,6 +75,11 @@ reste est refusé avec un message clair, pour éviter les pièges de YAML comple
 La liste des techniques est extraite des données officielles de MITRE par
 `python scripts/update_attack_data.py`, à relancer à chaque nouvelle version d'ATT&CK
 (version actuelle : **20.1**).
+
+Ci-dessous, une exécution réelle : une technique révoquée et un lien cassé sont signalés, l'export JSON
+est refusé, puis tout passe une fois corrigé.
+
+![playbook-check signale une technique MITRE ATT&CK révoquée et un lien cassé, puis l'export JSON](assets/playbook-check.png)
 
 ```powershell
 python -m venv .venv
