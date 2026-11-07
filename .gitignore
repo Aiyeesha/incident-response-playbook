@@ -1,0 +1,34 @@
+# --- Environnement virtuel ---
+.venv/
+
+# --- Fichiers compilés par Python ---
+__pycache__/
+*.py[cod]
+
+# --- Fichiers générés par l'installation, les tests et l'export ---
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# --- Secrets et configuration locale ---
+.env
+
+# --- Fichiers propres à l'éditeur et au système ---
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+.sf/
+.sfdx/
+
+# --- Données d'incidents réels ---
+# Ce dépôt contient des MODÈLES. Un rapport rempli lors d'un vrai incident contient
+# des informations sensibles (noms, adresses IP, preuves) : il ne doit jamais être publié.
+incidents/
+*.evtx
+*.pcap
+*.pcapng
+*.mem
+*.dmp

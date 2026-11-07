@@ -1,0 +1,81 @@
+# ─────────────────────────────────────────────────────────────
+# 1. Outil de construction du paquet
+# ─────────────────────────────────────────────────────────────
+# Le dépôt est avant tout une DOCUMENTATION. Ce paquet ne contient que
+# l'outillage qui la vérifie (playbook-check) et l'exportera (étape 7).
+[build-system]
+requires = ["setuptools>=84.2.1"]
+build-backend = "setuptools.build_meta"
+
+# ─────────────────────────────────────────────────────────────
+# 2. Description du projet
+# ─────────────────────────────────────────────────────────────
+[project]
+name = "incident-response-playbook"
+dynamic = ["version"]
+description = "Playbooks de réponse aux incidents (FR/EN) et outillage de vérification"
+readme = "README.md"
+requires-python = ">=3.11"         # tomllib, datetime.UTC et syntaxe moderne
+license = "MIT"
+authors = [{ name = "Aïcha Imène Dahoumane" }]
+keywords = ["incident-response", "playbook", "soc", "blue-team", "nist-800-61", "mitre-attack"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Natural Language :: French",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+    "Topic :: Documentation",
+]
+
+# Aucune dépendance d'exécution : la bibliothèque standard suffit
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=9.2.0", "ruff>=0.17.3"]
+
+[project.urls]
+Repository = "https://github.com/Aiyeesha/incident-response-playbook"
+Issues = "https://github.com/Aiyeesha/incident-response-playbook/issues"
+Changelog = "https://github.com/Aiyeesha/incident-response-playbook/blob/main/CHANGELOG.md"
+
+# Commande installée : « playbook-check » vérifie toute la documentation
+[project.scripts]
+playbook-check = "playbook_tools.check:main"
+
+# ─────────────────────────────────────────────────────────────
+# 3. Emplacement du code et version
+# ─────────────────────────────────────────────────────────────
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "playbook_tools.__version__" }
+
+# ─────────────────────────────────────────────────────────────
+# 4. Tests et qualité
+# ─────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Tout avertissement devient une erreur : rien ne passe « en silence »
+filterwarnings = ["error"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # style PEP 8
+    "F",        # erreurs logiques
+    "I",        # ordre des imports
+    "B",        # pièges courants (bugbear)
+    "UP",       # syntaxe moderne pour Python 3.11+
+    "S",        # sécurité (règles issues de Bandit)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Dans les tests, « assert » est l'outil normal
+"tests/**" = ["S101"]
