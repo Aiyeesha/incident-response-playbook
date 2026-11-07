@@ -37,3 +37,6 @@ Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playboo
 - `playbook-check` : techniques inconnues, révoquées (avec leur remplaçant) ou dépréciées refusées ;
   structure en 8 sections numérotées imposée aux playbooks, avec une action à cocher dans chaque
   section 2 à 8 ; chaque technique de la fiche doit être citée dans le texte.
+- Playbooks P04 (hameçonnage), P05 (accès non autorisé), P06 (déni de service) et P07 (compte
+  compromis et fraude au virement, nouveau), en français et en anglais, et tableau « Par où
+  commencer ? » dans l'index des playbooks.

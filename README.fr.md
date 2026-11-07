@@ -33,7 +33,7 @@ et quelles obligations à respecter.
 | 1 | Dépôt, structure, vérification automatique en CI | ✅ |
 | 2 | Socle commun : gravité et délais, escalade, RACI, cadre réglementaire, preuves | ✅ |
 | 3 | Playbooks P01 à P03 : logiciel malveillant, rançongiciel, fuite de données | ✅ |
-| 4 | Playbooks P04 à P07 : hameçonnage, accès non autorisé, déni de service, compte compromis | ⏳ |
+| 4 | Playbooks P04 à P07 : hameçonnage, accès non autorisé, déni de service, compte compromis | ✅ |
 | 5 | Modèles et exercice sur table | ⏳ |
 | 6 | Version anglaise complète | ⏳ |
 | 7 | Export JSON des listes d'actions → **v1.0.0** | ⏳ |
