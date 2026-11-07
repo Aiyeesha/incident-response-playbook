@@ -31,7 +31,7 @@ who does what, in which order, which evidence to preserve and which obligations 
 |---|---|---|
 | 1 | Repository, layout, automated checks in CI | ✅ |
 | 2 | Common foundation: severity and timelines, escalation, RACI, regulatory context, evidence | ✅ |
-| 3 | Playbooks P01 to P03: malware, ransomware, data breach | ⏳ |
+| 3 | Playbooks P01 to P03: malware, ransomware, data breach | ✅ |
 | 4 | Playbooks P04 to P07: phishing, unauthorised access, denial of service, compromised account | ⏳ |
 | 5 | Templates and tabletop exercise | ⏳ |
 | 6 | Full English version | ⏳ |
@@ -57,8 +57,16 @@ review: 2026-11-07          # last review date (YYYY-MM-DD)
 The accepted format is a **strict subset** of YAML (`key: value` and `key: [a, b]`): anything else is
 rejected with a clear message, to avoid the pitfalls of full YAML.
 
-`playbook-check` also verifies that every document exists **in both languages** with the same
-severities and MITRE techniques, and that **no internal link is broken**.
+`playbook-check` also verifies:
+
+- that every document exists **in both languages**, with the same severities and MITRE techniques;
+- that every MITRE ATT&CK technique **exists and is active** in the bundled official version (a revoked
+  technique is reported with its replacement) and is **explained in the text**;
+- that every playbook has its **8 numbered sections**, in order, with checklist actions;
+- that **no internal link is broken**.
+
+The technique list is extracted from MITRE's official data by `python scripts/update_attack_data.py`,
+to be rerun for every new ATT&CK release (current version: **20.1**).
 
 ```powershell
 python -m venv .venv

@@ -28,3 +28,12 @@ Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playboo
     (17Cyber, Cybermalveillance.gouv.fr, CERT-FR, CNIL) et sources officielles ;
   - D05 — préservation des preuves : principes et ordre de volatilité de la RFC 3227, erreurs à
     éviter, empreintes SHA-256, chaîne de custody.
+- Playbooks P01 (infection par logiciel malveillant), P02 (rançongiciel) et P03 (fuite de données),
+  en français et en anglais : 8 sections numérotées (détection, triage, confinement, preuves,
+  éradication, restauration, obligations et communication, clôture), arbre de décision et
+  techniques MITRE ATT&CK avec leurs sources d'observation.
+- Liste officielle des techniques MITRE ATT&CK Enterprise (v20.1) embarquée dans le paquet et script
+  `scripts/update_attack_data.py` pour la régénérer à partir des données STIX de MITRE.
+- `playbook-check` : techniques inconnues, révoquées (avec leur remplaçant) ou dépréciées refusées ;
+  structure en 8 sections numérotées imposée aux playbooks, avec une action à cocher dans chaque
+  section 2 à 8 ; chaque technique de la fiche doit être citée dans le texte.

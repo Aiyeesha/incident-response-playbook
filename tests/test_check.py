@@ -12,39 +12,43 @@ from pathlib import Path
 import pytest
 
 import playbook_tools
-from playbook_tools.check import FrontMatterError, main, parse_front_matter, run_checks
+from playbook_tools.check import (
+    FrontMatterError,
+    attack_data,
+    check_technique,
+    main,
+    parse_front_matter,
+    run_checks,
+)
 
 TODAY = date(2026, 11, 7)  # date fixe : les tests ne dépendent pas du jour d'exécution
 
-PLAYBOOK_FR = """---
+
+def playbook(lang: str, title: str, owner: str, action: str, mitre: str = "T1486, T1490") -> str:
+    """Construit un playbook minimal valide : fiche + 8 sections numérotées + techniques citées."""
+    sections = "\n".join(f"## {n}. Section {n}\n\n- [ ] {action} {n}\n" for n in range(1, 9))
+    techniques = " ".join(t.strip() for t in mitre.split(","))
+    return f"""---
 id: P02
-lang: fr
-title: Attaque par rançongiciel
+lang: {lang}
+title: {title}
 severity: [S1]
-mitre: [T1486, T1490]
-owner: Responsable SOC
+mitre: [{mitre}]
+owner: {owner}
 review: 2026-11-07
 ---
 
-# P02 — Attaque par rançongiciel
+# P02 — {title}
 
-- [ ] Isoler les postes touchés
+{sections}
+## MITRE ATT&CK
+
+{techniques}
 """
 
-PLAYBOOK_EN = """---
-id: P02
-lang: en
-title: Ransomware attack
-severity: [S1]
-mitre: [T1486, T1490]
-owner: SOC lead
-review: 2026-11-07
----
 
-# P02 — Ransomware attack
-
-- [ ] Isolate the affected hosts
-"""
+PLAYBOOK_FR = playbook("fr", "Attaque par rançongiciel", "Responsable SOC", "Isoler les postes touchés")
+PLAYBOOK_EN = playbook("en", "Ransomware attack", "SOC lead", "Isolate the affected hosts")
 
 DOC = """---
 id: D01
@@ -155,6 +159,7 @@ def test_fiches_mal_formees(texte, attendu):
         ("severity: [S1]", "severity: []", "« severity » est vide"),
         ("mitre: [T1486, T1490]", "mitre: [T148]", "technique MITRE ATT&CK invalide"),
         ("mitre: [T1486, T1490]", "mitre: [T1486.1]", "technique MITRE ATT&CK invalide"),
+        ("mitre: [T1486, T1490]", "mitre: [T1486, T1490, T1489]", "T1489 déclarée dans la fiche mais absente"),
         ("owner: Responsable SOC", "owner: [A, B]", "valeur simple"),
         ("review: 2026-11-07", "review: 07/11/2026", "AAAA-MM-JJ"),
         ("review: 2026-11-07", "review: 2026-02-30", "AAAA-MM-JJ"),
@@ -170,8 +175,9 @@ def test_fiches_invalides(repo, avant, apres, attendu):
 
 
 def test_sous_technique_mitre_acceptee(repo):
-    write(repo, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR.replace("T1490]", "T1490, T1110.003]"))
-    write(repo, "en/playbooks/P02-ransomware.md", PLAYBOOK_EN.replace("T1490]", "T1490, T1110.003]"))
+    mitre = "T1486, T1490, T1110.003"
+    write(repo, "fr/playbooks/P02-rancongiciel.md", playbook("fr", "Rançongiciel", "Responsable SOC", "Agir", mitre))
+    write(repo, "en/playbooks/P02-ransomware.md", playbook("en", "Ransomware", "SOC lead", "Act", mitre))
     assert messages(repo) == []
 
 
@@ -188,8 +194,76 @@ def test_prefixe_incoherent_avec_le_dossier(repo):
 
 
 def test_playbook_sans_action_a_cocher(repo):
-    write(repo, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR.replace("- [ ] Isoler", "- Isoler"))
-    assert any("action à cocher" in m for m in messages(repo))
+    write(
+        repo, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR.replace("- [ ] Isoler les postes touchés 5", "- Isoler")
+    )
+    assert "section 5 sans action à cocher « - [ ] »" in messages(repo)
+
+
+def test_section_1_peut_ne_pas_avoir_d_action(repo):
+    write(repo, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR.replace("- [ ] Isoler les postes touchés 1", "Signaux"))
+    assert messages(repo) == []
+
+
+@pytest.mark.parametrize(
+    ("avant", "apres"),
+    [
+        ("## 4. Section 4", "## 4bis Section 4"),  # section manquante
+        ("## 3. Section 3", "## 9. Section 3"),  # numéro inattendu
+        ("## 7. Section 7", "## 7.Section 7"),  # titre mal formé
+    ],
+)
+def test_structure_en_huit_sections(repo, avant, apres):
+    write(repo, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR.replace(avant, apres))
+    assert any("sections numérotées attendues" in m for m in messages(repo))
+
+
+def test_sections_dans_le_desordre(repo):
+    texte = PLAYBOOK_FR.replace("## 2. Section 2", "## X").replace("## 3. Section 3", "## 2. Section 2")
+    write(repo, "fr/playbooks/P02-rancongiciel.md", texte.replace("## X", "## 3. Section 3"))
+    assert any("sections numérotées attendues" in m for m in messages(repo))
+
+
+def test_une_section_s_arrete_au_titre_suivant_non_numerote(repo):
+    # L'action placée sous « ## MITRE ATT&CK » ne doit pas compter pour la section 8
+    texte = PLAYBOOK_FR.replace("- [ ] Isoler les postes touchés 8", "Rien")
+    write(repo, "fr/playbooks/P02-rancongiciel.md", texte + "\n- [ ] action hors section\n")
+    assert "section 8 sans action à cocher « - [ ] »" in messages(repo)
+
+
+def test_technique_declaree_absente_du_texte(repo):
+    write(repo, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR.replace("T1486 T1490", "T1486"))
+    assert "technique T1490 déclarée dans la fiche mais absente du texte" in messages(repo)
+
+
+@pytest.mark.parametrize(
+    ("technique", "attendu"),
+    [
+        ("T1562.001", "révoquée dans ATT&CK 20.1, remplacée par T1685"),
+        ("T9999", "inconnue dans MITRE ATT&CK 20.1"),
+        ("T1486.999", "inconnue dans MITRE ATT&CK 20.1"),
+    ],
+)
+def test_techniques_verifiees_dans_la_base_officielle(technique, attendu):
+    assert attendu in check_technique(technique)
+
+
+def test_technique_active_acceptee():
+    assert check_technique("T1685") is None
+    assert check_technique("T1486") is None
+
+
+def test_technique_revoquee_signalee_dans_le_depot(repo):
+    mitre = "T1486, T1490, T1562.001"
+    write(repo, "fr/playbooks/P02-rancongiciel.md", playbook("fr", "Rançongiciel", "Responsable SOC", "Agir", mitre))
+    write(repo, "en/playbooks/P02-ransomware.md", playbook("en", "Ransomware", "SOC lead", "Act", mitre))
+    assert any("remplacée par T1685" in m for m in messages(repo))
+
+
+def test_donnees_attack_embarquees():
+    data = attack_data()
+    assert data["attack_version"] == "20.1"
+    assert data["techniques"]["T1486"] == {"name": "Data Encrypted for Impact", "status": "active"}
 
 
 def test_fichier_non_markdown_refuse(repo):
@@ -215,7 +289,7 @@ def test_version_francaise_manquante(repo):
 
 
 def test_metadonnees_partagees_differentes(repo):
-    write(repo, "en/playbooks/P02-ransomware.md", PLAYBOOK_EN.replace("T1490]", "T1489]"))
+    write(repo, "en/playbooks/P02-ransomware.md", playbook("en", "Ransomware", "SOC lead", "Act", "T1486, T1489"))
     assert any("« mitre » diffère" in m for m in messages(repo))
 
 
