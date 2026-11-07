@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────
 # Intégration continue : à chaque push sur main et à chaque Pull Request,
-#  1. la documentation est vérifiée (fiches, parité FR/EN, liens) ;
+#  1. la documentation est vérifiée (fiches, parité FR/EN, liens), puis exportée en JSON ;
 #  2. l'outil de vérification est testé ;
 #  3. son code est analysé (style, logique, sécurité).
 # ─────────────────────────────────────────────────────────────
@@ -39,6 +39,12 @@ jobs:
 
             - name: Vérifier les fiches, la parité FR/EN et les liens
               run: playbook-check
+
+            # L'export doit réussir dans les deux langues (il est refusé au moindre problème)
+            - name: Exporter les actions à cocher en JSON (FR et EN)
+              run: |
+                  playbook-export --lang fr -o playbooks.fr.json
+                  playbook-export --lang en -o playbooks.en.json
 
     # ─── L'outil fonctionne-t-il partout ? ────────────────────
     tests:

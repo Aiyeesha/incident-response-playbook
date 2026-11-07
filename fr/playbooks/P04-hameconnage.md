@@ -73,7 +73,7 @@ playbook couvre la campagne elle-même ; ses conséquences ont leurs propres pla
 ## 7. Obligations et communication
 
 - [ ] Si des identifiants ou des données personnelles ont été divulgués : associer le DPO et évaluer la notification à la CNIL ([D04](../docs/D04-cadre-reglementaire.md), §2)
-- [ ] Signaler le message aux services publics dédiés (par exemple Signal Spam pour les courriels, le 33700 pour les SMS) et, si une marque est imitée, à cette marque
+- [ ] Signaler le message aux services publics dédiés (par exemple Signal Spam pour les courriels ; le 33700 pour les SMS et appels indésirables, en transférant le SMS au 33700 ou via le formulaire de 33700.fr) et, si une marque est imitée, à cette marque
 - [ ] Remercier les utilisateurs qui ont signalé le message : c'est le meilleur capteur de détection
 - [ ] Partager un message de sensibilisation court, avec une capture du faux message et les indices qui le trahissaient
 

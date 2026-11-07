@@ -5,9 +5,9 @@
 Cybersecurity incident response procedures **a team can use as-is**: for each incident type,
 who does what, in which order, which evidence to preserve and which obligations apply.
 
-> 🚧 **Work in progress** (v0.1.0 — scaffold). Playbooks land in steps 2 to 5.
+**v1.0.0** — 7 playbooks, 6 reference documents, 4 templates, in French and English, checked in CI.
 
-## What the repository will contain
+## What the repository contains
 
 | Folder | Content |
 |---|---|
@@ -15,7 +15,7 @@ who does what, in which order, which evidence to preserve and which obligations 
 | `…/playbooks/` | P01 to P07: step-by-step procedures per incident type |
 | `…/docs/` | Severity and timelines, escalation, RACI matrix, regulatory context, evidence, tabletop exercise |
 | `…/templates/` | Incident report, post-mortem, crisis communication, evidence log |
-| [`src/playbook_tools/`](src/playbook_tools/) | `playbook-check` validation tool (and, in step 7, JSON export) |
+| [`src/playbook_tools/`](src/playbook_tools/) | `playbook-check` validation tool and `playbook-export` JSON export |
 
 ## Frameworks
 
@@ -34,8 +34,8 @@ who does what, in which order, which evidence to preserve and which obligations 
 | 3 | Playbooks P01 to P03: malware, ransomware, data breach | ✅ |
 | 4 | Playbooks P04 to P07: phishing, unauthorised access, denial of service, compromised account | ✅ |
 | 5 | Templates and tabletop exercise | ✅ |
-| 6 | Full English version | ⏳ |
-| 7 | JSON export of the action checklists → **v1.0.0** | ⏳ |
+| 6 | Full English version | ✅ |
+| 7 | JSON export of the action checklists → **v1.0.0** | ✅ |
 
 ## Document format
 
@@ -73,7 +73,41 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 playbook-check          # validate the documentation
-pytest -v               # test the validation tool
+playbook-export --lang en -o playbooks.en.json   # export the checklists
+pytest -v               # test the tools
+```
+
+## JSON export
+
+`playbook-export` turns the playbooks of one language into a structured JSON document, ready to
+be loaded into a ticketing tool, a SOC dashboard or an incident tracker: metadata, official MITRE
+ATT&CK technique names and the **checklist actions grouped by section**. The export is **refused**
+if `playbook-check` finds any problem, so an incomplete list is never distributed. Both files are
+attached to every [release](https://github.com/Aiyeesha/incident-response-playbook/releases).
+
+```powershell
+playbook-export --lang en -o playbooks.en.json
+```
+
+```json
+{
+  "schema_version": 1,
+  "tool_version": "1.0.0",
+  "attack_version": "20.1",
+  "lang": "en",
+  "playbooks": [
+    {
+      "id": "P02",
+      "title": "Ransomware attack",
+      "severity": ["S1"],
+      "mitre": [{ "id": "T1486", "name": "Data Encrypted for Impact" }],
+      "source": "en/playbooks/P02-ransomware.md",
+      "sections": [
+        { "number": 3, "title": "Containment", "actions": ["Isolate every affected machine…"] }
+      ]
+    }
+  ]
+}
 ```
 
 ## License

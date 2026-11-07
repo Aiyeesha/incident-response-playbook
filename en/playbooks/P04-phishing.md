@@ -73,7 +73,7 @@ its consequences have their own playbooks:
 ## 7. Obligations and communication
 
 - [ ] If credentials or personal data were disclosed: involve the DPO and assess notification to the CNIL ([D04](../docs/D04-regulatory-context.md), §2)
-- [ ] Report the message to the dedicated public services (in France, for example, Signal Spam for emails and 33700 for text messages) and, if a brand is impersonated, to that brand
+- [ ] Report the message to the dedicated public services (in France, for example, Signal Spam for emails; 33700 for unwanted text messages and calls, by forwarding the text to 33700 or through the 33700.fr online form) and, if a brand is impersonated, to that brand
 - [ ] Thank the users who reported the message: they are the best detection sensor
 - [ ] Share a short awareness message, with a capture of the fake message and the clues that gave it away
 

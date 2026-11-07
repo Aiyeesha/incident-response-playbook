@@ -32,3 +32,6 @@ incidents/
 *.pcapng
 *.mem
 *.dmp
+
+# Exports JSON générés localement (publiés comme pièces jointes des versions, pas versionnés)
+/playbooks.*.json

@@ -6,4 +6,4 @@ ce paquet sert uniquement à la vérifier, et plus tard à l'exporter.
 """
 
 # Source unique de la version (lue par pyproject.toml)
-__version__ = "0.1.0"
+__version__ = "1.0.0"
