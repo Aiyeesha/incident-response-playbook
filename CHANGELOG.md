@@ -6,6 +6,12 @@ versionnage [sémantique](https://semver.org/lang/fr/).
 Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playbook` en anglais et
 `playbook-reponse-incidents` en français), archivés en privé.
 
+## [Non publié]
+
+### Ajouté
+- README FR/EN : badges (vérifications, Python, dépendances, version ATT&CK, licence) et capture d'une
+  exécution réelle de `playbook-check` et `playbook-export` (`assets/playbook-check.png`).
+
 ## [1.0.0] — 2026-11-07
 
 Première version stable.
