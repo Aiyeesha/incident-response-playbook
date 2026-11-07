@@ -31,7 +31,7 @@ et quelles obligations à respecter.
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Dépôt, structure, vérification automatique en CI | ✅ |
-| 2 | Socle commun : gravité et délais, escalade, RACI, cadre réglementaire, preuves | ⏳ |
+| 2 | Socle commun : gravité et délais, escalade, RACI, cadre réglementaire, preuves | ✅ |
 | 3 | Playbooks P01 à P03 : logiciel malveillant, rançongiciel, fuite de données | ⏳ |
 | 4 | Playbooks P04 à P07 : hameçonnage, accès non autorisé, déni de service, compte compromis | ⏳ |
 | 5 | Modèles et exercice sur table | ⏳ |
