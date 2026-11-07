@@ -35,3 +35,8 @@ incidents/
 
 # Exports JSON générés localement (publiés comme pièces jointes des versions, pas versionnés)
 /playbooks.*.json
+
+# Interface web : dépendances, code compilé et exports générés (reconstruits en CI)
+web/node_modules/
+web/dist/
+web/data/

@@ -18,7 +18,7 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
-from playbook_tools.check import SEVERITIES, Document, Problem, parse_front_matter, split_sections
+from playbook_tools.check import CHECKBOX, SEVERITIES, Document, Problem, parse_front_matter, split_sections
 
 # ─────────────────────────────────────────────────────────────
 # 1. Texte simple et tableaux Markdown
@@ -31,6 +31,9 @@ _LEVEL_HEADER = re.compile(r"^(?P<id>S[1-4]) — (?P<label>.+)$")  # « S1 — C
 _BOLD_START = re.compile(r"^\*\*(?P<name>[^*]+)\*\*")  # « **Confinement** (la menace…) »
 # Délai chiffré en heures en DÉBUT de cellule : « **72 heures** après… » ; « **1 mois** » n'en est pas un
 _HOURS = re.compile(r"^\*\*(?P<hours>\d+) (?:heures|hours)\*\*")
+
+# « Idem » / « Same » dans une cellule de D04 : même valeur que la ligne précédente
+_SAME_AS_ABOVE = {"idem", "same"}
 
 # Paragraphe d'aide au choix, en tête de chaque playbook
 WHEN_MARKERS = {"fr": "**Quand l'utiliser :**", "en": "**When to use it:**"}
@@ -128,17 +131,27 @@ def obligations_reference(body: str) -> list[dict]:
     header, *rows = table
     if len(header) != 4:
         raise ReferenceError("section 1 : le tableau des obligations doit avoir 4 colonnes")
-    obligations = []
+    obligations: list[dict] = []
     for row in rows:
         if len(row) != 4:
             raise ReferenceError(f"section 1 : la ligne « {plain_text(row[0])} » doit avoir 4 colonnes")
         hours = _HOURS.match(row[2])
+
+        def resolved(column: str, cell: str) -> str:
+            """« Idem » reprend la ligne précédente : une fois exportée, chaque ligne doit se lire seule."""
+            value = plain_text(cell)
+            if value.lower() not in _SAME_AS_ABOVE:
+                return value
+            if not obligations:
+                raise ReferenceError(f"section 1 : « {value} » sur la première ligne, sans valeur à reprendre")
+            return obligations[-1][column]
+
         obligations.append(
             {
                 "name": plain_text(row[0]),
-                "who": plain_text(row[1]),
+                "who": resolved("who", row[1]),
                 "deadline": plain_text(row[2]),
-                "recipient": plain_text(row[3]),
+                "recipient": resolved("recipient", row[3]),
                 # Compte à rebours possible seulement pour un délai en heures depuis la prise de connaissance
                 "hours": int(hours.group("hours")) if hours else None,
             }
@@ -155,18 +168,32 @@ def obligations_reference(body: str) -> list[dict]:
 # ─────────────────────────────────────────────────────────────
 
 
+def _paragraph(lines: list[str], start: int) -> list[str]:
+    """Lignes d'un paragraphe à partir de « start », jusqu'à la première ligne vide."""
+    paragraph = []
+    for line in lines[start:]:
+        if not line.strip():
+            break
+        paragraph.append(line.strip())
+    return paragraph
+
+
 def when_to_use(body: str, lang: str) -> str | None:
-    """Texte du paragraphe « Quand l'utiliser : … » (il peut tenir sur plusieurs lignes)."""
+    """Texte du paragraphe « Quand l'utiliser : … » (plusieurs lignes possibles).
+
+    S'il se termine par « : », la liste qui suit en fait partie (« ses conséquences ont leurs
+    propres playbooks : - … ; - … ») : elle est ajoutée, sans les tirets.
+    """
     marker = WHEN_MARKERS[lang]
     lines = body.splitlines()
     for index, line in enumerate(lines):
         if line.startswith(marker):
-            paragraph = [line[len(marker) :]]
-            for following in lines[index + 1 :]:
-                if not following.strip():  # un paragraphe s'arrête à la première ligne vide
-                    break
-                paragraph.append(following)
-            return plain_text(" ".join(part.strip() for part in paragraph))
+            paragraph = _paragraph(lines, index)
+            paragraph[0] = paragraph[0][len(marker) :].strip()
+            following = index + len(paragraph) + 1  # première ligne après la ligne vide
+            if paragraph[-1].endswith(":") and following < len(lines) and lines[following].startswith("- "):
+                paragraph += [item.removeprefix("- ") for item in _paragraph(lines, following)]
+            return plain_text(" ".join(paragraph))
     return None
 
 
@@ -186,11 +213,17 @@ def _shape(doc_id: str, data: Any) -> object:
 
 
 def check_reference(documents: Iterable[Document]) -> list[Problem]:
-    """Tableaux de D01 et D04 bien formés et identiques en FR/EN ; « Quand l'utiliser » dans chaque playbook."""
+    """Tableaux D01/D04 bien formés et identiques en FR/EN ; playbooks : « Quand l'utiliser » et actions en parité."""
     problems: list[Problem] = []
     extracted: dict[tuple[str, str], tuple[Document, Any]] = {}
+    # Nombre d'actions à cocher par section : l'interface web repère une action par sa position,
+    # il doit donc être identique en français et en anglais
+    action_counts: dict[tuple[str, str], tuple[Document, list[int]]] = {}
     for doc in documents:
         if doc.kind == "playbook":
+            sections = split_sections(body_of(doc.path))
+            counts = [len(CHECKBOX.findall(sections[n])) for n in sorted(sections)]
+            action_counts[(doc.doc_id, doc.lang)] = (doc, counts)
             if when_to_use(body_of(doc.path), doc.lang) is None:
                 marker = WHEN_MARKERS[doc.lang]
                 problems.append(Problem(doc.path, f"paragraphe « {marker} » introuvable (aide au choix du playbook)"))
@@ -199,6 +232,10 @@ def check_reference(documents: Iterable[Document]) -> list[Problem]:
                 extracted[(doc.doc_id, doc.lang)] = (doc, PARSERS[doc.doc_id](body_of(doc.path)))
             except ReferenceError as exc:
                 problems.append(Problem(doc.path, str(exc)))
+    for (doc_id, lang), (doc, counts) in action_counts.items():
+        if lang == "en" and (doc_id, "fr") in action_counts and action_counts[(doc_id, "fr")][1] != counts:
+            message = f"nombre d'actions par section différent de la version « fr » ({counts})"
+            problems.append(Problem(doc.path, message))
     for doc_id in PARSERS:
         if (doc_id, "fr") in extracted and (doc_id, "en") in extracted:
             (_fr_doc, fr_data), (en_doc, en_data) = extracted[(doc_id, "fr")], extracted[(doc_id, "en")]

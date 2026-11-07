@@ -142,6 +142,35 @@ playbook-export --lang fr -o playbooks.fr.json
 }
 ```
 
+## Interface web
+
+Le dossier [`web/`](web/) contient une interface pour le moment où un incident commence, qui
+fonctionne entièrement dans le navigateur :
+
+1. **qualifier la gravité** sur les cinq critères de D01 (le critère le plus grave l'emporte ; un
+   playbook peut relever le niveau, jamais l'abaisser) et afficher les délais internes du niveau ;
+2. **choisir le playbook** grâce à son paragraphe « Quand l'utiliser » ;
+3. **suivre les échéances légales** de D04 depuis l'heure de prise de connaissance (CNIL 72 h,
+   NIS 2 24 h et 72 h, plainte 72 h) ;
+4. **cocher les actions** des huit phases, chacune horodatée ;
+5. **exporter un rapport Markdown** (heures en UTC), à reprendre dans le rapport d'incident (T01).
+
+Elle lit les exports JSON de cette documentation, en français et en anglais. Choix de sécurité :
+politique de sécurité du contenu stricte (aucune requête hors du site), aucun cookie ni mesure
+d'audience, **rien n'est conservé par défaut** ; l'enregistrement local est une option à activer.
+La qualification proposée reste une **aide à la décision**.
+
+```powershell
+# Prérequis : Node.js 24 et l'outil Python installé (voir plus haut)
+playbook-export --lang fr -o web/data/playbooks.fr.json
+playbook-export --lang en -o web/data/playbooks.en.json
+cd web
+npm ci                 # dépendances de développement, versions exactes
+npm test               # tests (dont les vrais exports de web/data/)
+npm run build          # compile src/*.ts vers dist/
+python -m http.server 8000   # puis ouvrir http://localhost:8000
+```
+
 ## Licence
 
 [MIT](LICENSE) © Aïcha Imène Dahoumane — libre d'adaptation pour votre organisation.

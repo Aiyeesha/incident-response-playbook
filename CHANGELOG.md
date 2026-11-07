@@ -17,6 +17,18 @@ Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playboo
   obligations, au moins un délai en heures), leur parité FR/EN (nombre de critères et de délais, délais
   chiffrés identiques) et la présence du paragraphe « Quand l'utiliser » dans chaque playbook.
 
+- **Interface web** (`web/`, TypeScript sans framework ni dépendance d'exécution) : qualification de
+  la gravité sur les critères de D01, choix du playbook, échéances légales de D04 calculées depuis
+  l'heure de prise de connaissance, actions à cocher horodatées, rapport Markdown en UTC, français et
+  anglais, thèmes clair et sombre. Politique de sécurité du contenu stricte, rien n'est conservé par
+  défaut (enregistrement local facultatif). 34 tests Node.js, dont les vrais exports.
+- CI : job « Interface web · Node 24 » (génération des exports, typage, tests, construction) ;
+  Dependabot surveille aussi les dépendances npm de `web/`.
+- `playbook-check` vérifie que chaque section d'un playbook a le même nombre d'actions en français et
+  en anglais (l'interface repère une action par sa position).
+- Export : « Idem » / « Same » dans le tableau de D04 est remplacé par la valeur de la ligne
+  précédente, et un paragraphe « Quand l'utiliser » qui se termine par « : » inclut la liste qui suit.
+
 ### Modifié
 - **Format JSON** : passage de la version 1 à la version 2. Les champs existants sont inchangés ; les
   outils qui lisent l'export peuvent ignorer les nouveaux blocs.

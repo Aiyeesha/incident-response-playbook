@@ -238,7 +238,9 @@ def test_playbook_sans_action_a_cocher(repo):
 
 
 def test_section_1_peut_ne_pas_avoir_d_action(repo):
+    # Dans les deux langues, pour respecter la parité du nombre d'actions par section
     write(repo, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR.replace("- [ ] Isoler les postes touchés 1", "Signaux"))
+    write(repo, "en/playbooks/P02-ransomware.md", PLAYBOOK_EN.replace("- [ ] Isolate the affected hosts 1", "Signals"))
     assert messages(repo) == []
 
 

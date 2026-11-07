@@ -133,6 +133,30 @@ def test_quand_l_utiliser_sur_plusieurs_lignes():
     assert when_to_use(corps, "fr") == "des fichiers sont chiffrés, une note apparaît."
 
 
+def test_quand_l_utiliser_suivi_d_une_liste():
+    corps = (
+        "**When to use it:** a campaign; its consequences have their own playbooks:\n\n"
+        "- an attachment was run → [P01 — Malware](P01-malware.md);\n"
+        "- credentials were used → [P07](P07.md).\n\n| Item |\n"
+    )
+    attendu = "a campaign; its consequences have their own playbooks: an attachment was run → P01 — Malware;"
+    assert when_to_use(corps, "en") == attendu + " credentials were used → P07."
+
+
+def test_idem_reprend_la_ligne_precedente():
+    tableau = OBLIGATIONS + "| Notification NIS 2 | Idem | **72 heures** | Idem |\n"
+    derniere = obligations_reference(tableau)[-1]
+    assert (derniere["who"], derniere["recipient"]) == ("Responsable", "Interne")
+
+
+def test_idem_sur_la_premiere_ligne():
+    tableau = OBLIGATIONS.replace(
+        "| Violation (RGPD, [art. 33](https://eur-lex.europa.eu)) | Responsable |", "| Violation | Same |"
+    )
+    with pytest.raises(ReferenceError, match="« Same » sur la première ligne"):
+        obligations_reference(tableau)
+
+
 def test_quand_l_utiliser_absent():
     assert when_to_use("# P02\n\nTexte.\n", "en") is None
 
@@ -161,3 +185,11 @@ def test_parite_des_delais_chiffres(repo):  # noqa: F811
     chemin = repo / "en/docs/D04-context.md"
     chemin.write_text(chemin.read_text(encoding="utf-8").replace("**72 hours**", "**24 hours**"), encoding="utf-8")
     assert messages(repo) == ["tableaux de référence différents de la version « fr » ([24, None])"]
+
+
+def test_parite_du_nombre_d_actions(repo):  # noqa: F811
+    chemin = repo / "en/playbooks/P02-ransomware.md"
+    ajout = "- [ ] Isolate the affected hosts 3\n- [ ] Extra action\n"
+    texte = chemin.read_text(encoding="utf-8").replace("- [ ] Isolate the affected hosts 3\n", ajout)
+    chemin.write_text(texte, encoding="utf-8")
+    assert messages(repo) == ["nombre d'actions par section différent de la version « fr » ([1, 1, 2, 1, 1, 1, 1, 1])"]
