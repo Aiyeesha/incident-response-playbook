@@ -11,3 +11,4 @@ The common foundation every playbook relies on.
 | D03 | [RACI matrix](D03-raci-matrix.md) | Who is responsible, accountable, consulted or informed, for each activity |
 | D04 | [Regulatory context and reporting](D04-regulatory-context.md) | GDPR, NIS 2, police complaint and insurance, public contacts, official sources |
 | D05 | [Evidence preservation](D05-evidence-preservation.md) | Collection order (RFC 3227), mistakes to avoid, SHA-256 hashes, chain of custody |
+| D06 | [Tabletop exercise](D06-tabletop-exercise.md) | Ransomware scenario in 9 injects, legal deadlines to watch, assessment grid |

@@ -92,8 +92,7 @@ For each item, record:
 | Storage | Encrypted disk no. 3, SOC safe |
 | Transfers | Date and time, from whom to whom, reason, hash verified (yes or no) |
 
-A ready-to-fill template, the **evidence log**, will be added with the other templates (step 5 of the
-project).
+A ready-to-fill template is available: the [evidence log (T04)](../templates/T04-evidence-log.md).
 
 ## 6. Storing and protecting evidence
 

@@ -33,7 +33,7 @@ who does what, in which order, which evidence to preserve and which obligations 
 | 2 | Common foundation: severity and timelines, escalation, RACI, regulatory context, evidence | ✅ |
 | 3 | Playbooks P01 to P03: malware, ransomware, data breach | ✅ |
 | 4 | Playbooks P04 to P07: phishing, unauthorised access, denial of service, compromised account | ✅ |
-| 5 | Templates and tabletop exercise | ⏳ |
+| 5 | Templates and tabletop exercise | ✅ |
 | 6 | Full English version | ⏳ |
 | 7 | JSON export of the action checklists → **v1.0.0** | ⏳ |
 

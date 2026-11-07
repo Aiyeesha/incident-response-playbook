@@ -94,8 +94,7 @@ contestée. Pour chaque élément, on consigne :
 | Stockage | Disque chiffré n° 3, armoire forte du SOC |
 | Transferts | Date et heure, de qui à qui, motif, empreinte vérifiée (oui ou non) |
 
-Un modèle prêt à remplir, le **registre de preuves**, sera ajouté avec les autres modèles
-(étape 5 du projet).
+Un modèle prêt à remplir est disponible : le [registre de preuves (T04)](../templates/T04-registre-de-preuves.md).
 
 ## 6. Conserver et protéger les preuves
 
