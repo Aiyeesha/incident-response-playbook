@@ -40,3 +40,10 @@ Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playboo
 - Playbooks P04 (hameçonnage), P05 (accès non autorisé), P06 (déni de service) et P07 (compte
   compromis et fraude au virement, nouveau), en français et en anglais, et tableau « Par où
   commencer ? » dans l'index des playbooks.
+- Modèles, en français et en anglais : T01 rapport d'incident (repères de temps pour le MTTD et le
+  MTTR, journal des actions, suivi des obligations), T02 post-mortem sans recherche de coupable
+  (« 5 pourquoi », plan d'action), T03 communication de crise (salariés, clients, personnes concernées
+  selon l'article 34 du RGPD, presse), T04 registre de preuves (inventaire, chaîne de custody,
+  restitution).
+- D06 — exercice sur table : scénario de rançongiciel en 9 injections, délais légaux à surveiller et
+  grille d'évaluation. D05 renvoie désormais au registre de preuves T04.
