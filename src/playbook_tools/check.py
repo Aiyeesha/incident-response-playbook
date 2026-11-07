@@ -442,6 +442,10 @@ def run_checks(root: Path, today: date | None = None) -> tuple[list[Document], l
     documents, problems = collect_documents(root, today)
     problems.extend(check_parity(documents))
     problems.extend(check_links(root))
+    # Import local : reference.py s'appuie lui-même sur ce module (fiches, sections numérotées)
+    from playbook_tools.reference import check_reference
+
+    problems.extend(check_reference(documents))
     return documents, problems
 
 

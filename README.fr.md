@@ -92,12 +92,19 @@ pytest -v               # teste les outils
 
 ## Export JSON
 
-`playbook-export` transforme les playbooks d'une langue en un document JSON structuré, prêt à
+`playbook-export` transforme la documentation d'une langue en un document JSON structuré, prêt à
 être chargé dans un outil de ticketing, un tableau de bord SOC ou un suivi d'incidents :
-métadonnées, noms officiels des techniques MITRE ATT&CK et **actions à cocher regroupées par
-section**. L'export est **refusé** si `playbook-check` trouve le moindre problème : une liste
-incomplète n'est jamais diffusée. Les deux fichiers sont joints à chaque
-[version publiée](https://github.com/Aiyeesha/incident-response-playbook/releases).
+
+- les **playbooks** : métadonnées, paragraphe « Quand l'utiliser », noms officiels des techniques
+  MITRE ATT&CK et **actions à cocher regroupées par section** ;
+- la **grille de gravité** et les **délais internes** de [D01](fr/docs/D01-gravite-et-delais.md) ;
+- les **obligations légales** de [D04](fr/docs/D04-cadre-reglementaire.md), avec leur délai en heures
+  quand il est chiffré (`hours`), pour calculer les échéances.
+
+Ces données sont **lues dans les tableaux Markdown**, qui restent la seule source de vérité ;
+`playbook-check` vérifie leur forme et leur parité FR/EN. L'export est **refusé** si `playbook-check`
+trouve le moindre problème : une liste incomplète n'est jamais diffusée. Les deux fichiers sont joints
+à chaque [version publiée](https://github.com/Aiyeesha/incident-response-playbook/releases).
 
 ```powershell
 playbook-export --lang fr -o playbooks.fr.json
@@ -105,15 +112,26 @@ playbook-export --lang fr -o playbooks.fr.json
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "tool_version": "1.0.0",
   "attack_version": "20.1",
   "lang": "fr",
+  "severity": {
+    "levels": [{ "id": "S1", "label": "Critique" }, "…"],
+    "criteria": [{ "name": "Activité", "levels": { "S1": "Activité arrêtée…", "S2": "…" } }],
+    "timelines": [{ "name": "Prise en charge", "levels": { "S1": "15 minutes", "S2": "1 heure" } }],
+    "source": "fr/docs/D01-gravite-et-delais.md"
+  },
+  "obligations": {
+    "items": [{ "name": "Violation de données personnelles (RGPD, art. 33)", "hours": 72, "…": "…" }],
+    "source": "fr/docs/D04-cadre-reglementaire.md"
+  },
   "playbooks": [
     {
       "id": "P02",
       "title": "Attaque par rançongiciel",
       "severity": ["S1"],
+      "when": "des fichiers sont chiffrés, une note de rançon apparaît…",
       "mitre": [{ "id": "T1486", "name": "Data Encrypted for Impact" }],
       "source": "fr/playbooks/P02-rancongiciel.md",
       "sections": [

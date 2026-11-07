@@ -9,6 +9,17 @@ Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playboo
 ## [Non publié]
 
 ### Ajouté
+- Export JSON au **format 2** (`schema_version: 2`) : grille de gravité et délais internes de D01,
+  obligations légales de D04 avec leur délai en heures quand il est chiffré, et paragraphe « Quand
+  l'utiliser » de chaque playbook. Ces données sont lues dans les tableaux Markdown (module
+  `reference.py`), sans copie à maintenir. L'export est refusé si D01 ou D04 manque.
+- `playbook-check` vérifie la forme des tableaux de D01 et D04 (colonnes S1 à S4, 4 colonnes pour les
+  obligations, au moins un délai en heures), leur parité FR/EN (nombre de critères et de délais, délais
+  chiffrés identiques) et la présence du paragraphe « Quand l'utiliser » dans chaque playbook.
+
+### Modifié
+- **Format JSON** : passage de la version 1 à la version 2. Les champs existants sont inchangés ; les
+  outils qui lisent l'export peuvent ignorer les nouveaux blocs.
 - README FR/EN : badges (vérifications, Python, dépendances, version ATT&CK, licence) et capture d'une
   exécution réelle de `playbook-check` et `playbook-export` (`assets/playbook-check.png`).
 

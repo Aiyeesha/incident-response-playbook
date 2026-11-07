@@ -24,8 +24,11 @@ from playbook_tools.check import (
 TODAY = date(2026, 11, 7)  # date fixe : les tests ne dépendent pas du jour d'exécution
 
 
+WHEN = {"fr": "**Quand l'utiliser :** des fichiers sont chiffrés.", "en": "**When to use it:** files are encrypted."}
+
+
 def playbook(lang: str, title: str, owner: str, action: str, mitre: str = "T1486, T1490") -> str:
-    """Construit un playbook minimal valide : fiche + 8 sections numérotées + techniques citées."""
+    """Construit un playbook minimal valide : fiche, « Quand l'utiliser », 8 sections, techniques citées."""
     sections = "\n".join(f"## {n}. Section {n}\n\n- [ ] {action} {n}\n" for n in range(1, 9))
     techniques = " ".join(t.strip() for t in mitre.split(","))
     return f"""---
@@ -39,6 +42,8 @@ review: 2026-11-07
 ---
 
 # P02 — {title}
+
+{WHEN[lang]}
 
 {sections}
 ## MITRE ATT&CK
@@ -58,6 +63,36 @@ review: 2026-11-07
 ---
 
 # {title}
+
+## 2. Niveaux
+
+| Critère | S1 — Critique | S2 — Élevée | S3 — Moyenne | S4 — Faible |
+|---|---|---|---|---|
+| **Étendue** | Plusieurs sites | Un serveur | Un poste | Aucun |
+
+## 3. Délais
+
+| Délai | S1 — Critique | S2 — Élevée | S3 — Moyenne | S4 — Faible |
+|---|---|---|---|---|
+| **Prise en charge** (un analyste commence) | 15 minutes | 1 heure | 4 heures | 1 jour ouvré |
+"""
+
+# D04 : tableau des obligations, avec un délai en heures en français comme en anglais
+D04 = """---
+id: D04
+lang: {lang}
+title: {title}
+review: 2026-11-07
+---
+
+# {title}
+
+## 1. Délais
+
+| Obligation | Qui | Délai | Destinataire |
+|---|---|---|---|
+| Notification CNIL | Responsable de traitement | **72 {unit}** après la prise de connaissance | CNIL |
+| Registre | Responsable de traitement | **Toujours** | Interne |
 """
 
 
@@ -70,11 +105,13 @@ def write(root: Path, relative: str, content: str) -> Path:
 
 @pytest.fixture
 def repo(tmp_path: Path) -> Path:
-    """Dépôt fictif valide : un playbook et un document, dans les deux langues."""
+    """Dépôt fictif valide : un playbook et les documents de référence D01 et D04, dans les deux langues."""
     write(tmp_path, "fr/playbooks/P02-rancongiciel.md", PLAYBOOK_FR)
     write(tmp_path, "en/playbooks/P02-ransomware.md", PLAYBOOK_EN)
     write(tmp_path, "fr/docs/D01-gravite.md", DOC.format(lang="fr", title="Gravité"))
     write(tmp_path, "en/docs/D01-severity.md", DOC.format(lang="en", title="Severity"))
+    write(tmp_path, "fr/docs/D04-cadre.md", D04.format(lang="fr", title="Cadre", unit="heures"))
+    write(tmp_path, "en/docs/D04-context.md", D04.format(lang="en", title="Context", unit="hours"))
     write(tmp_path, "README.md", "[Playbook](fr/playbooks/P02-rancongiciel.md)\n")
     return tmp_path
 
@@ -92,12 +129,12 @@ def test_version_coherente():
 def test_depot_valide(repo):
     documents, problems = run_checks(repo, TODAY)
     assert problems == []
-    assert len(documents) == 4
+    assert len(documents) == 6
 
 
 def test_ligne_de_commande(repo, capsys):
     assert main([str(repo)]) == 0
-    assert "4 document(s) vérifié(s) — OK" in capsys.readouterr().out
+    assert "6 document(s) vérifié(s) — OK" in capsys.readouterr().out
 
 
 def test_ligne_de_commande_mauvaise_racine(tmp_path, capsys):
@@ -317,9 +354,11 @@ def test_liens_acceptes(repo, lien):
 
 
 def test_lien_casse(repo):
-    write(repo, "fr/docs/D01-gravite.md", DOC.format(lang="fr", title="Gravité") + "\n[P09](../playbooks/P09.md)\n")
+    contenu = DOC.format(lang="fr", title="Gravité") + "\n[P09](../playbooks/P09.md)\n"
+    write(repo, "fr/docs/D01-gravite.md", contenu)
+    ligne = contenu.splitlines().index("[P09](../playbooks/P09.md)") + 1  # numéro de ligne attendu
     probs = run_checks(repo, TODAY)[1]
-    assert [(p.message, p.line) for p in probs] == [("lien cassé : ../playbooks/P09.md", 10)]
+    assert [(p.message, p.line) for p in probs] == [("lien cassé : ../playbooks/P09.md", ligne)]
 
 
 def test_lien_hors_depot(repo):
