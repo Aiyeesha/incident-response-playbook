@@ -106,6 +106,12 @@ def test_ligne_de_commande_vers_un_fichier(repo, tmp_path, capsys):  # noqa: F81
     assert "rançongiciel" in cible.read_text(encoding="utf-8")
 
 
+def test_dossier_de_destination_cree_s_il_manque(repo, tmp_path):  # noqa: F811
+    cible = tmp_path / "web" / "data" / "playbooks.fr.json"
+    assert main([str(repo), "--lang", "fr", "-o", str(cible)]) == 0
+    assert cible.is_file()
+
+
 def test_ligne_de_commande_documentation_invalide(repo, capsys):  # noqa: F811
     write(repo, "README.md", "[cassé](absent.md)\n")
     assert main([str(repo), "--lang", "fr"]) == 1

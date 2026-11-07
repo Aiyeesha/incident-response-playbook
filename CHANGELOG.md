@@ -29,6 +29,8 @@ Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playboo
 - Export : « Idem » / « Same » dans le tableau de D04 est remplacé par la valeur de la ligne
   précédente, et un paragraphe « Quand l'utiliser » qui se termine par « : » inclut la liste qui suit.
 
+- `playbook-export -o` crée le dossier de destination s'il n'existe pas (par exemple `web/data/`).
+
 ### Modifié
 - **Format JSON** : passage de la version 1 à la version 2. Les champs existants sont inchangés ; les
   outils qui lisent l'export peuvent ignorer les nouveaux blocs.

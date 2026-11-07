@@ -128,6 +128,8 @@ def main(argv: list[str] | None = None) -> int:
 
     text = json.dumps(document, ensure_ascii=False, indent=2) + "\n"
     if args.output:
+        # Le dossier de destination est créé s'il manque (ex. web/data/, absent d'un clone neuf)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(text, encoding="utf-8")
         count = sum(len(s["actions"]) for p in document["playbooks"] for s in p["sections"])
         print(f"{len(document['playbooks'])} playbook(s), {count} action(s) → {args.output}")
