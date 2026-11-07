@@ -32,7 +32,7 @@ et quelles obligations à respecter.
 |---|---|---|
 | 1 | Dépôt, structure, vérification automatique en CI | ✅ |
 | 2 | Socle commun : gravité et délais, escalade, RACI, cadre réglementaire, preuves | ✅ |
-| 3 | Playbooks P01 à P03 : logiciel malveillant, rançongiciel, fuite de données | ⏳ |
+| 3 | Playbooks P01 à P03 : logiciel malveillant, rançongiciel, fuite de données | ✅ |
 | 4 | Playbooks P04 à P07 : hameçonnage, accès non autorisé, déni de service, compte compromis | ⏳ |
 | 5 | Modèles et exercice sur table | ⏳ |
 | 6 | Version anglaise complète | ⏳ |
@@ -58,8 +58,17 @@ review: 2026-11-07          # date de dernière révision (AAAA-MM-JJ)
 Le format accepté est un **sous-ensemble strict** de YAML (`clé: valeur` et `clé: [a, b]`) : tout le
 reste est refusé avec un message clair, pour éviter les pièges de YAML complet.
 
-`playbook-check` vérifie aussi que chaque document existe **dans les deux langues** avec les mêmes
-gravités et techniques MITRE, et qu'**aucun lien interne n'est cassé**.
+`playbook-check` vérifie aussi :
+
+- que chaque document existe **dans les deux langues**, avec les mêmes gravités et techniques MITRE ;
+- que chaque technique MITRE ATT&CK **existe et est active** dans la version officielle embarquée
+  (une technique révoquée est signalée avec son remplaçant) et qu'elle est **expliquée dans le texte** ;
+- que chaque playbook a ses **8 sections numérotées**, dans l'ordre, avec des actions à cocher ;
+- qu'**aucun lien interne n'est cassé**.
+
+La liste des techniques est extraite des données officielles de MITRE par
+`python scripts/update_attack_data.py`, à relancer à chaque nouvelle version d'ATT&CK
+(version actuelle : **20.1**).
 
 ```powershell
 python -m venv .venv

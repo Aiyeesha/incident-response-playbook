@@ -51,6 +51,10 @@ playbook-check = "playbook_tools.check:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# Liste officielle des techniques MITRE ATT&CK, embarquée dans le paquet
+[tool.setuptools.package-data]
+playbook_tools = ["data/*.json"]
+
 [tool.setuptools.dynamic]
 version = { attr = "playbook_tools.__version__" }
 

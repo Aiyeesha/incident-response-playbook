@@ -32,11 +32,14 @@ Tout le reste est REFUSÉ avec un message clair, plutôt que deviné.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
+from functools import cache
+from importlib import resources
 from pathlib import Path
 
 # ─────────────────────────────────────────────────────────────
@@ -73,6 +76,16 @@ KEY_LINE = re.compile(r"(?P<key>[a-z_]+):(?:[ ]+(?P<value>.*))?")
 # Lien Markdown en ligne : [texte](cible) — on ignore les images et liens externes plus bas
 MD_LINK = re.compile(r"(?<!!)\[[^\]]*\]\((?P<target>[^)\s]+)(?:\s+\"[^\"]*\")?\)")
 FENCE = re.compile(r"^\s*(```|~~~)")
+
+# Structure imposée à tout playbook : 8 sections numérotées, dans cet ordre, identiques en FR et en EN
+# (le titre de chaque section est traduit, son numéro ne change jamais ; l'export JSON s'appuie dessus).
+#   1 Détection · 2 Triage · 3 Confinement · 4 Preuves · 5 Éradication · 6 Restauration
+#   7 Obligations et communication · 8 Clôture
+PLAYBOOK_SECTIONS = range(1, 9)
+# Sections qui doivent contenir au moins une action à cocher (la section 1 décrit les signaux)
+ACTION_SECTIONS = range(2, 9)
+SECTION_HEADING = re.compile(r"^## (?P<number>\d+)\. \S", flags=re.MULTILINE)
+CHECKBOX = re.compile(r"^\s*[-*] \[ \] \S", flags=re.MULTILINE)
 
 # Dossiers jamais parcourus lors du contrôle des liens
 SKIP_DIRS = {".git", ".venv", "node_modules", "build", "dist", ".pytest_cache", ".ruff_cache"}
@@ -121,6 +134,31 @@ class FrontMatterError(ValueError):
     def __init__(self, message: str, line: int | None = None) -> None:
         super().__init__(message)
         self.line = line
+
+
+@cache
+def attack_data() -> dict:
+    """
+    Liste officielle des techniques MITRE ATT&CK, embarquée dans le paquet
+    (générée par scripts/update_attack_data.py). Lue une seule fois grâce au cache.
+    """
+    text = resources.files("playbook_tools").joinpath("data", "attack-enterprise.json").read_text(encoding="utf-8")
+    return json.loads(text)
+
+
+def check_technique(technique: str) -> str | None:
+    """Renvoie un message d'erreur si la technique n'existe pas ou n'est plus active, sinon None."""
+    data = attack_data()
+    entry = data["techniques"].get(technique)
+    version = data["attack_version"]
+    if entry is None:
+        return f"technique « {technique} » inconnue dans MITRE ATT&CK {version}"
+    if entry["status"] == "revoked":
+        hint = f", remplacée par {entry['replaced_by']}" if entry.get("replaced_by") else ""
+        return f"technique « {technique} » ({entry['name']}) révoquée dans ATT&CK {version}{hint}"
+    if entry["status"] == "deprecated":
+        return f"technique « {technique} » ({entry['name']}) dépréciée dans ATT&CK {version}"
+    return None
 
 
 # ─────────────────────────────────────────────────────────────
@@ -253,17 +291,50 @@ def check_metadata(doc: Document, today: date) -> list[Problem]:
         for technique in mitre:
             if not MITRE_ID.fullmatch(technique):
                 problem(f"technique MITRE ATT&CK invalide « {technique} » (attendu : T1234 ou T1234.001)")
+            elif message := check_technique(technique):
+                problem(message)
         if len(set(mitre)) != len(mitre):
             problem("« mitre » contient un doublon")
 
     return problems
 
 
+def split_sections(body: str) -> dict[int, str]:
+    """Découpe le corps d'un playbook en sections numérotées « ## N. Titre » → texte de la section."""
+    sections: dict[int, str] = {}
+    matches = list(SECTION_HEADING.finditer(body))
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(body)
+        # La section s'arrête aussi au prochain titre de niveau 2 non numéroté (« ## Arbre de décision »)
+        text = body[match.end() : end]
+        next_plain = re.search(r"^## (?!\d+\. )", text, flags=re.MULTILINE)
+        sections[int(match.group("number"))] = text[: next_plain.start()] if next_plain else text
+    return sections
+
+
 def check_playbook_body(doc: Document, body: str, first_line: int) -> list[Problem]:
-    """Un playbook doit contenir au moins une action à cocher « - [ ] »."""
-    if not re.search(r"^\s*[-*] \[ \] \S", body, flags=re.MULTILINE):
-        return [Problem(doc.path, "aucune action à cocher « - [ ] » dans le playbook", first_line)]
-    return []
+    """Structure en 8 sections, actions à cocher, et techniques MITRE expliquées dans le texte."""
+    problems: list[Problem] = []
+    numbers = [int(m.group("number")) for m in SECTION_HEADING.finditer(body)]
+    if numbers != list(PLAYBOOK_SECTIONS):
+        expected = ", ".join(str(n) for n in PLAYBOOK_SECTIONS)
+        found = ", ".join(str(n) for n in numbers) or "aucune"
+        problems.append(
+            Problem(doc.path, f"sections numérotées attendues : {expected} (trouvées : {found})", first_line)
+        )
+    else:
+        sections = split_sections(body)
+        for number in ACTION_SECTIONS:
+            if not CHECKBOX.search(sections[number]):
+                problems.append(Problem(doc.path, f"section {number} sans action à cocher « - [ ] »", first_line))
+    techniques = doc.meta.get("mitre")
+    if isinstance(techniques, list):
+        for technique in techniques:
+            if not re.search(rf"\b{re.escape(technique)}\b", body):
+                problems.append(
+                    Problem(doc.path, f"technique {technique} déclarée dans la fiche mais absente du texte")
+                )
+    return problems
 
 
 # ─────────────────────────────────────────────────────────────
