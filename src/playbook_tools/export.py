@@ -1,10 +1,14 @@
 """
 Export des playbooks au format JSON (commande « playbook-export »).
 
-Transforme les playbooks Markdown d'une langue en un document JSON structuré, lisible par
-d'autres outils : un outil de ticketing, un tableau de bord SOC, la page /admin/incidents du
-portfolio… Chaque playbook y apparaît avec ses métadonnées, les noms officiels de ses
-techniques MITRE ATT&CK et ses actions à cocher, regroupées par section numérotée.
+Transforme la documentation d'une langue en un document JSON structuré, lisible par d'autres
+outils : l'interface web du dépôt, un outil de ticketing, un tableau de bord SOC… On y trouve :
+  - chaque playbook avec ses métadonnées, son paragraphe « Quand l'utiliser », les noms officiels
+    de ses techniques MITRE ATT&CK et ses actions à cocher, regroupées par section numérotée ;
+  - la grille de gravité et les délais internes de D01 ;
+  - les obligations légales de D04, avec leur délai en heures quand il est chiffré.
+
+Format (schema_version 2) : 1 + « severity », « obligations » et, par playbook, « when ».
 
 Règle de sécurité : l'export est REFUSÉ si playbook-check trouve le moindre problème.
 On ne diffuse jamais une liste d'actions incomplète ou incohérente.
@@ -23,27 +27,20 @@ from playbook_tools.check import (
     LANGUAGES,
     Document,
     attack_data,
-    parse_front_matter,
     run_checks,
     split_sections,
 )
 from playbook_tools.console import setup_streams
+from playbook_tools.reference import body_of, obligations_reference, plain_text, severity_reference, when_to_use
 
-# Version du format JSON produit : à incrémenter si la structure change de façon incompatible
-SCHEMA_VERSION = 1
+# Version du format JSON, incrémentée à chaque évolution de la structure.
+# 1 : playbooks seuls. 2 : + « severity » (D01), « obligations » (D04) et « when » par playbook.
+SCHEMA_VERSION = 2
 
-# Nettoyage du Markdown pour obtenir un texte simple
-_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")  # [texte](cible) → texte
-_EMPHASIS = re.compile(r"\*\*|__|`")  # gras et code en ligne
 # Titre de section numérotée, ligne entière : « ## 3. Confinement »
 _SECTION_TITLE = re.compile(r"^## (?P<number>\d+)\. (?P<title>.+?)\s*$", flags=re.MULTILINE)
 # Action à cocher : on capture TOUT le texte qui suit la case « - [ ] »
 _ACTION = re.compile(r"^\s*[-*] \[ \] (?P<text>.+?)\s*$", flags=re.MULTILINE)
-
-
-def plain_text(markdown: str) -> str:
-    """Texte lisible sans syntaxe Markdown : liens réduits à leur texte, gras et code retirés."""
-    return _EMPHASIS.sub("", _LINK.sub(r"\1", markdown)).strip()
 
 
 def section_titles(body: str) -> dict[int, str]:
@@ -58,9 +55,7 @@ def actions(section_text: str) -> list[str]:
 
 def export_playbook(doc: Document, root: Path) -> dict:
     """Représentation JSON d'un playbook déjà validé."""
-    text = doc.path.read_text(encoding="utf-8")
-    _meta, body_start = parse_front_matter(text)
-    body = "\n".join(text.splitlines()[body_start - 1 :])
+    body = body_of(doc.path)
     titles = section_titles(body)
     techniques = attack_data()["techniques"]
     return {
@@ -69,8 +64,9 @@ def export_playbook(doc: Document, root: Path) -> dict:
         "severity": doc.meta["severity"],
         "owner": doc.meta["owner"],
         "review": doc.meta["review"],
+        "when": when_to_use(body, doc.lang),  # aide au choix du playbook (vérifiée par playbook-check)
         "mitre": [{"id": tid, "name": techniques[tid]["name"]} for tid in doc.meta["mitre"]],
-        "source": doc.path.relative_to(root).as_posix(),  # ex. fr/playbooks/P02-rancongiciel.md
+        "source": _source(doc, root),  # ex. fr/playbooks/P02-rancongiciel.md
         "sections": [
             {"number": number, "title": titles[number], "actions": actions(section)}
             for number, section in sorted(split_sections(body).items())
@@ -83,16 +79,29 @@ def build_export(root: Path, lang: str) -> dict:
     documents, problems = run_checks(root)
     if problems:
         raise ValueError(f"{len(problems)} problème(s) détecté(s) par playbook-check : export refusé.")
-    playbooks = sorted(
-        (doc for doc in documents if doc.kind == "playbook" and doc.lang == lang), key=lambda d: d.doc_id
-    )
+    in_lang = [doc for doc in documents if doc.lang == lang]
+    playbooks = sorted((doc for doc in in_lang if doc.kind == "playbook"), key=lambda d: d.doc_id)
+    # Les deux documents de référence sont indispensables à l'interface : leur absence bloque l'export
+    reference = {doc.doc_id: doc for doc in in_lang if doc.kind == "doc" and doc.doc_id in ("D01", "D04")}
+    for missing in sorted({"D01", "D04"} - reference.keys()):
+        raise ValueError(f"document de référence {missing} absent en « {lang} » : export refusé.")
     return {
         "schema_version": SCHEMA_VERSION,
         "tool_version": __version__,
         "attack_version": attack_data()["attack_version"],
         "lang": lang,
+        "severity": {**severity_reference(body_of(reference["D01"].path)), "source": _source(reference["D01"], root)},
+        "obligations": {
+            "items": obligations_reference(body_of(reference["D04"].path)),
+            "source": _source(reference["D04"], root),
+        },
         "playbooks": [export_playbook(doc, root) for doc in playbooks],
     }
+
+
+def _source(doc: Document, root: Path) -> str:
+    """Chemin du document dans le dépôt, avec des « / » : fr/docs/D01-gravite-et-delais.md."""
+    return doc.path.relative_to(root).as_posix()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -100,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     setup_streams()
     parser = argparse.ArgumentParser(
         prog="playbook-export",
-        description="Exporte les playbooks d'une langue au format JSON (actions à cocher par section).",
+        description="Exporte la documentation d'une langue au format JSON (gravité, obligations, playbooks).",
     )
     parser.add_argument("root", nargs="?", default=".", help="racine du dépôt (défaut : dossier courant)")
     parser.add_argument("--lang", choices=LANGUAGES, required=True, help="langue à exporter")

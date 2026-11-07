@@ -90,10 +90,18 @@ pytest -v               # test the tools
 
 ## JSON export
 
-`playbook-export` turns the playbooks of one language into a structured JSON document, ready to
-be loaded into a ticketing tool, a SOC dashboard or an incident tracker: metadata, official MITRE
-ATT&CK technique names and the **checklist actions grouped by section**. The export is **refused**
-if `playbook-check` finds any problem, so an incomplete list is never distributed. Both files are
+`playbook-export` turns the documentation of one language into a structured JSON document, ready to
+be loaded into a ticketing tool, a SOC dashboard or an incident tracker:
+
+- the **playbooks**: metadata, "When to use it" paragraph, official MITRE ATT&CK technique names
+  and **checklist actions grouped by section**;
+- the **severity grid** and **internal timelines** of [D01](en/docs/D01-severity-and-timelines.md);
+- the **legal obligations** of [D04](en/docs/D04-regulatory-context.md), with their deadline in hours
+  when it is a fixed number (`hours`), to compute due dates.
+
+This data is **read from the Markdown tables**, which remain the single source of truth;
+`playbook-check` verifies their shape and their FR/EN parity. The export is **refused** if
+`playbook-check` finds any problem, so an incomplete list is never distributed. Both files are
 attached to every [release](https://github.com/Aiyeesha/incident-response-playbook/releases).
 
 ```powershell
@@ -102,15 +110,26 @@ playbook-export --lang en -o playbooks.en.json
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "tool_version": "1.0.0",
   "attack_version": "20.1",
   "lang": "en",
+  "severity": {
+    "levels": [{ "id": "S1", "label": "Critical" }, "…"],
+    "criteria": [{ "name": "Business", "levels": { "S1": "Operations stopped…", "S2": "…" } }],
+    "timelines": [{ "name": "Acknowledgement", "levels": { "S1": "15 minutes", "S2": "1 hour" } }],
+    "source": "en/docs/D01-severity-and-timelines.md"
+  },
+  "obligations": {
+    "items": [{ "name": "Personal data breach (GDPR, art. 33)", "hours": 72, "…": "…" }],
+    "source": "en/docs/D04-regulatory-context.md"
+  },
   "playbooks": [
     {
       "id": "P02",
       "title": "Ransomware attack",
       "severity": ["S1"],
+      "when": "files are encrypted, a ransom note appears…",
       "mitre": [{ "id": "T1486", "name": "Data Encrypted for Impact" }],
       "source": "en/playbooks/P02-ransomware.md",
       "sections": [

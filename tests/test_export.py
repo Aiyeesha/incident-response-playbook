@@ -44,12 +44,20 @@ def test_structure_de_l_export(repo):  # noqa: F811
     assert document["tool_version"] == __version__
     assert document["attack_version"] == "20.1"
     assert document["lang"] == "fr"
+    # Format 2 : grille de gravité (D01) et obligations légales (D04) lues dans la documentation
+    assert [level["id"] for level in document["severity"]["levels"]] == ["S1", "S2", "S3", "S4"]
+    assert document["severity"]["criteria"][0]["name"] == "Étendue"
+    assert document["severity"]["timelines"][0]["levels"]["S1"] == "15 minutes"
+    assert document["severity"]["source"] == "fr/docs/D01-gravite.md"
+    assert [o["hours"] for o in document["obligations"]["items"]] == [72, None]
+    assert document["obligations"]["source"] == "fr/docs/D04-cadre.md"
 
     (playbook,) = document["playbooks"]  # les documents D.. ne sont pas exportés
     assert playbook["id"] == "P02"
     assert playbook["title"] == "Attaque par rançongiciel"
     assert playbook["severity"] == ["S1"]
     assert playbook["owner"] == "Responsable SOC"
+    assert playbook["when"] == "des fichiers sont chiffrés."
     assert playbook["source"] == "fr/playbooks/P02-rancongiciel.md"
     assert playbook["mitre"] == [
         {"id": "T1486", "name": "Data Encrypted for Impact"},
@@ -67,6 +75,15 @@ def test_export_anglais(repo):  # noqa: F811
     (playbook,) = build_export(repo, "en")["playbooks"]
     assert playbook["source"] == "en/playbooks/P02-ransomware.md"
     assert playbook["sections"][0]["actions"] == ["Isolate the affected hosts 1"]
+
+
+def test_export_refuse_sans_document_de_reference(repo):  # noqa: F811
+    # D04 retiré dans les DEUX langues : la documentation reste cohérente, mais l'interface n'aurait
+    # plus les délais légaux, donc l'export est refusé
+    (repo / "fr/docs/D04-cadre.md").unlink()
+    (repo / "en/docs/D04-context.md").unlink()
+    with pytest.raises(ValueError, match="D04 absent en « fr »"):
+        build_export(repo, "fr")
 
 
 def test_export_refuse_si_la_documentation_est_invalide(repo):  # noqa: F811
