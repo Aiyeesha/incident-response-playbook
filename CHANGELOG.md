@@ -6,9 +6,16 @@ versionnage [sémantique](https://semver.org/lang/fr/).
 Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playbook` en anglais et
 `playbook-reponse-incidents` en français), archivés en privé.
 
-## [Non publié]
+## [1.1.0] — 2026-11-08
+
+Interface web publiée sur GitHub Pages : https://aiyeesha.github.io/incident-response-playbook/
 
 ### Ajouté
+- Publication sur **GitHub Pages** (`.github/workflows/pages.yml`) : la documentation est vérifiée, les
+  exports JSON FR et EN sont générés à partir du même commit, l'interface est retestée puis construite ;
+  seuls les fichiers utiles au navigateur sont publiés.
+- README FR/EN : lien vers l'interface, captures (`assets/web-light-fr.png`, `assets/web-dark-en.png`),
+  étape 8 de la feuille de route.
 - Export JSON au **format 2** (`schema_version: 2`) : grille de gravité et délais internes de D01,
   obligations légales de D04 avec leur délai en heures quand il est chiffré, et paragraphe « Quand
   l'utiliser » de chaque playbook. Ces données sont lues dans les tableaux Markdown (module

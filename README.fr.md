@@ -12,7 +12,10 @@ Procédures de réponse aux incidents de cybersécurité, **directement utilisab
 pour chaque type d'incident, qui fait quoi, dans quel ordre, avec quelles preuves à préserver
 et quelles obligations à respecter.
 
-**v1.0.0** — 7 playbooks, 6 documents de référence, 4 modèles, en français et en anglais, vérifiés en CI.
+**v1.1.0** — 7 playbooks, 6 documents de référence, 4 modèles, en français et en anglais, vérifiés en CI,
+et une **[interface web](https://aiyeesha.github.io/incident-response-playbook/?lang=fr)** pour les premières heures d'un incident.
+
+![Interface web : qualification de la gravité, choix du playbook, échéances légales et actions à cocher](assets/web-light-fr.png)
 
 ## Ce que contient le dépôt
 
@@ -43,6 +46,7 @@ et quelles obligations à respecter.
 | 5 | Modèles et exercice sur table | ✅ |
 | 6 | Version anglaise complète | ✅ |
 | 7 | Export JSON des listes d'actions → **v1.0.0** | ✅ |
+| 8 | Interface web sur GitHub Pages : triage, échéances légales, actions, rapport → **v1.1.0** | ✅ |
 
 ## Le format d'un document
 
@@ -113,7 +117,7 @@ playbook-export --lang fr -o playbooks.fr.json
 ```json
 {
   "schema_version": 2,
-  "tool_version": "1.0.0",
+  "tool_version": "1.1.0",
   "attack_version": "20.1",
   "lang": "fr",
   "severity": {
@@ -144,8 +148,8 @@ playbook-export --lang fr -o playbooks.fr.json
 
 ## Interface web
 
-Le dossier [`web/`](web/) contient une interface pour le moment où un incident commence, qui
-fonctionne entièrement dans le navigateur :
+**[Ouvrir l'interface](https://aiyeesha.github.io/incident-response-playbook/?lang=fr)** — le dossier [`web/`](web/) contient une interface pour le
+moment où un incident commence, qui fonctionne entièrement dans le navigateur :
 
 1. **qualifier la gravité** sur les cinq critères de D01 (le critère le plus grave l'emporte ; un
    playbook peut relever le niveau, jamais l'abaisser) et afficher les délais internes du niveau ;
@@ -155,7 +159,10 @@ fonctionne entièrement dans le navigateur :
 4. **cocher les actions** des huit phases, chacune horodatée ;
 5. **exporter un rapport Markdown** (heures en UTC), à reprendre dans le rapport d'incident (T01).
 
-Elle lit les exports JSON de cette documentation, en français et en anglais. Choix de sécurité :
+![Interface web en thème sombre, en anglais : échéances légales et actions à cocher](assets/web-dark-en.png)
+
+Elle lit les exports JSON de cette documentation, en français et en anglais, régénérés à partir du
+même commit à chaque publication (`.github/workflows/pages.yml`). Choix de sécurité :
 politique de sécurité du contenu stricte (aucune requête hors du site), aucun cookie ni mesure
 d'audience, **rien n'est conservé par défaut** ; l'enregistrement local est une option à activer.
 La qualification proposée reste une **aide à la décision**.

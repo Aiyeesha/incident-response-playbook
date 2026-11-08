@@ -11,7 +11,10 @@
 Cybersecurity incident response procedures **a team can use as-is**: for each incident type,
 who does what, in which order, which evidence to preserve and which obligations apply.
 
-**v1.0.0** — 7 playbooks, 6 reference documents, 4 templates, in French and English, checked in CI.
+**v1.1.0** — 7 playbooks, 6 reference documents, 4 templates, in French and English, checked in CI,
+and a **[web interface](https://aiyeesha.github.io/incident-response-playbook/)** for the first hours of an incident.
+
+![Web interface: severity assessment, playbook choice, legal deadlines and checklist](assets/web-light-en.png)
 
 ## What the repository contains
 
@@ -42,6 +45,7 @@ who does what, in which order, which evidence to preserve and which obligations 
 | 5 | Templates and tabletop exercise | ✅ |
 | 6 | Full English version | ✅ |
 | 7 | JSON export of the action checklists → **v1.0.0** | ✅ |
+| 8 | Web interface on GitHub Pages: triage, legal deadlines, checklist, report → **v1.1.0** | ✅ |
 
 ## Document format
 
@@ -111,7 +115,7 @@ playbook-export --lang en -o playbooks.en.json
 ```json
 {
   "schema_version": 2,
-  "tool_version": "1.0.0",
+  "tool_version": "1.1.0",
   "attack_version": "20.1",
   "lang": "en",
   "severity": {
@@ -142,8 +146,8 @@ playbook-export --lang en -o playbooks.en.json
 
 ## Web interface
 
-The [`web/`](web/) folder holds an interface for the moment an incident starts, running entirely in
-the browser:
+**[Open the interface](https://aiyeesha.github.io/incident-response-playbook/)** — the [`web/`](web/) folder holds an interface for the moment an
+incident starts, running entirely in the browser:
 
 1. **assess the severity** on the five criteria of D01 (the most severe criterion wins; a playbook
    can raise the level, never lower it) and show the internal timelines for that level;
@@ -153,7 +157,10 @@ the browser:
 4. **tick the actions** of the eight phases, each one timestamped;
 5. **export a Markdown report** (times in UTC), to reuse in the incident report (T01).
 
-It reads the JSON exports of this documentation, in French and English. Security choices: strict
+![Web interface in dark theme, in English: legal deadlines and checklist](assets/web-dark-en.png)
+
+It reads the JSON exports of this documentation, in French and English, regenerated from the same
+commit at every publication (`.github/workflows/pages.yml`). Security choices: strict
 content security policy (no request outside the site), no cookies or analytics, **nothing is kept
 by default**; local saving is an opt-in option. The proposed severity remains a **decision aid**.
 
