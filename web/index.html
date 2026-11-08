@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!--
+    Politique de sécurité du contenu (CSP), déclarée ici car GitHub Pages ne permet pas
+    d'envoyer d'en-têtes HTTP personnalisés :
+      default-src 'none'   tout est interdit par défaut ;
+      script-src 'self'    seuls les scripts de ce site s'exécutent (aucun script en ligne) ;
+      style-src 'self'     seule la feuille de style de ce site s'applique ;
+      img-src 'self' data: icône de l'onglet ;
+      connect-src 'self'   seule requête réseau permise : lire les playbooks JSON de CE site ;
+      base-uri / form-action 'none'  ni balise <base>, ni envoi de formulaire.
+    Aucune donnée saisie ne peut donc partir vers un serveur.
+  -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Qualifier la gravité d'un incident de sécurité, choisir le bon playbook, suivre les délais légaux et cocher les actions, dans le navigateur. Assess an incident, pick the playbook, track legal deadlines and tick the actions, in the browser.">
+
+  <title>Réponse aux incidents — triage, actions et délais légaux</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312161F'/%3E%3Crect x='7' y='7' width='18' height='4' rx='1' fill='%23D93A2B'/%3E%3Crect x='7' y='14' width='13' height='4' rx='1' fill='%23F2EEE6'/%3E%3Crect x='7' y='21' width='9' height='4' rx='1' fill='%23F2EEE6'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <!-- type="module" : chargé après l'analyse de la page, en mode strict -->
+  <script type="module" src="./dist/main.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main" id="skip-link">Aller au contenu</a>
+
+  <header class="top">
+    <span class="brand"><span class="brand-mark" aria-hidden="true"></span>Incident Response Playbook</span>
+    <nav class="langs" aria-label="Langue / Language">
+      <button type="button" id="lang-fr" lang="fr" aria-pressed="true">FR</button>
+      <button type="button" id="lang-en" lang="en" aria-pressed="false">EN</button>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <p class="warning" role="note" id="warning"></p>
+    <h1 id="heading">Un incident commence : par où commencer ?</h1>
+    <p class="intro" id="intro"></p>
+
+    <noscript><p class="warning">Cette page a besoin de JavaScript : tout se passe dans votre navigateur. — This page needs JavaScript: everything runs in your browser.</p></noscript>
+    <p id="status" class="status" role="status"></p>
+
+    <div id="app" hidden>
+      <!-- ── 1. Qualifier la gravité ─────────────────────────── -->
+      <section class="step" aria-labelledby="triage-title">
+        <h2 id="triage-title"></h2>
+        <p class="help" id="triage-help"></p>
+        <div id="criteria" class="criteria"></div>
+
+        <div class="result" aria-live="polite">
+          <p class="result-label" id="result-label"></p>
+          <p class="badge" id="level-badge" data-level="none"></p>
+          <p id="result-detail"></p>
+          <p id="result-open" class="muted"></p>
+          <p id="result-raised" class="raised"></p>
+          <p class="note" id="decision-note"></p>
+          <div id="timelines-box" hidden>
+            <h3 id="timelines-title"></h3>
+            <table class="timelines"><tbody id="timelines"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 2. Choisir le playbook ──────────────────────────── -->
+      <section class="step" aria-labelledby="playbook-title">
+        <h2 id="playbook-title"></h2>
+        <p class="help" id="playbook-help"></p>
+        <fieldset class="playbooks">
+          <legend class="sr-only" id="playbook-legend"></legend>
+          <div id="playbooks"></div>
+        </fieldset>
+      </section>
+
+      <!-- ── 3. Échéances légales ────────────────────────────── -->
+      <section class="step" aria-labelledby="deadlines-title">
+        <h2 id="deadlines-title"></h2>
+        <div class="awareness">
+          <label for="awareness" id="awareness-label"></label>
+          <div class="field">
+            <input type="datetime-local" id="awareness" aria-describedby="awareness-hint awareness-error">
+            <button type="button" id="awareness-now"></button>
+          </div>
+          <p class="help" id="awareness-hint"></p>
+          <p class="error" id="awareness-error" role="alert"></p>
+        </div>
+        <ul id="dues" class="dues"></ul>
+        <p class="note" id="legal-note"></p>
+      </section>
+
+      <!-- ── 4. Répondre ─────────────────────────────────────── -->
+      <section class="step" aria-labelledby="checklist-title">
+        <h2 id="checklist-title"></h2>
+        <p id="checklist-none" class="muted"></p>
+        <div id="checklist-box" hidden>
+          <p id="progress-text" aria-live="polite"></p>
+          <div class="bar" aria-hidden="true"><span id="progress-bar"></span></div>
+          <div id="sections"></div>
+        </div>
+      </section>
+
+      <!-- ── 5. Rapport ──────────────────────────────────────── -->
+      <section class="step" aria-labelledby="report-title">
+        <h2 id="report-title"></h2>
+        <label for="reference" id="reference-label"></label>
+        <input type="text" id="reference" maxlength="40" autocomplete="off" spellcheck="false" aria-describedby="reference-hint">
+        <p class="help" id="reference-hint"></p>
+        <div class="actions">
+          <button type="button" id="copy" class="primary"></button>
+          <button type="button" id="download"></button>
+        </div>
+        <p id="report-status" class="muted" role="status"></p>
+
+        <div class="save">
+          <label class="switch"><input type="checkbox" id="save"> <span id="save-label"></span></label>
+          <p class="help" id="save-hint"></p>
+          <button type="button" id="clear" class="danger"></button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p><a id="source-link" href="https://github.com/Aiyeesha/incident-response-playbook" rel="noopener noreferrer"></a></p>
+    <p id="footer-privacy"></p>
+    <p id="footer-version" class="muted"></p>
+  </footer>
+</body>
+</html>

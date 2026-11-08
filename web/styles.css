@@ -1,0 +1,257 @@
+/* ─────────────────────────────────────────────────────────────
+   Incident Response Playbook — feuille de style unique
+   Thème : une main courante de cellule de crise. Papier crème, encre
+   anthracite, un seul rouge d'alerte ; la gravité S1 → S4 suit une
+   échelle rouge → vert, toujours doublée du libellé (jamais la couleur
+   seule). Polices système : aucune requête vers un service tiers.
+   ───────────────────────────────────────────────────────────── */
+
+/* 1. Jetons — thème clair par défaut */
+:root {
+  --paper: #f2eee6;      /* fond crème, papier de main courante */
+  --surface: #fffdf8;
+  --ink: #12161f;
+  --muted: #535a68;
+  --rule: #d8d1c3;
+  --alert: #c4321f;      /* le rouge d'alerte, réservé à l'urgence */
+  --s1: #b3261e;
+  --s2: #c25a00;
+  --s3: #8a6d00;
+  --s4: #2e7d4f;
+  --s1-bg: #fbe3df;
+  --s2-bg: #fdebd9;
+  --s3-bg: #f7efcf;
+  --s4-bg: #e0f1e6;
+  --accent: #1f4fbf;
+  --focus: #1f4fbf;
+  --radius: 8px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12161f;
+    --surface: #1b2130;
+    --ink: #ece7dc;
+    --muted: #a9b0bf;
+    --rule: #323a4d;
+    --alert: #ff8a78;
+    --s1: #ff8f85;
+    --s2: #ffb26b;
+    --s3: #e7cf6a;
+    --s4: #79d3a0;
+    --s1-bg: #3a1d1d;
+    --s2-bg: #3a2a18;
+    --s3-bg: #343017;
+    --s4-bg: #183327;
+    --accent: #8fb0ff;
+    --focus: #8fb0ff;
+    color-scheme: dark;
+  }
+}
+
+/* 2. Base */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1rem/1.55 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+main, .top, .foot {
+  width: min(100% - 2rem, 60rem);   /* marge de 1 rem sur mobile */
+  margin-inline: auto;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 1.1rem + 3vw, 2.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 750;
+  margin: 1.25rem 0 0.75rem;
+}
+
+h2 {
+  font-size: 1.35rem;
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.01em;
+}
+
+h3 { font-size: 1rem; margin: 1rem 0 0.4rem; }
+
+a { color: var(--accent); }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.skip {
+  position: absolute; left: 1rem; top: -3rem;
+  background: var(--ink); color: var(--paper); padding: 0.5rem 0.75rem; border-radius: var(--radius);
+}
+.skip:focus { top: 1rem; }
+
+/* 3. En-tête et pied de page */
+.top {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: 1rem 0; border-bottom: 1px solid var(--rule);
+}
+
+.brand { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 700; }
+.brand-mark {
+  width: 1.1rem; height: 1.1rem; border-radius: 3px;
+  background: linear-gradient(var(--alert) 0 34%, transparent 34% 44%, var(--ink) 44% 62%, transparent 62% 72%, var(--ink) 72%);
+}
+
+.langs { display: flex; gap: 0.25rem; }
+.langs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.foot { padding: 2rem 0 3rem; border-top: 1px solid var(--rule); margin-top: 2.5rem; font-size: 0.92rem; }
+.foot p { margin: 0.3rem 0; }
+
+/* 4. Textes d'appoint */
+.intro { font-size: 1.08rem; color: var(--muted); max-width: 46rem; }
+.help { color: var(--muted); margin: 0.25rem 0 0.75rem; }
+.muted { color: var(--muted); }
+.note { font-size: 0.92rem; color: var(--muted); border-left: 3px solid var(--rule); padding-left: 0.75rem; }
+.error { color: var(--alert); font-weight: 600; min-height: 1.2em; margin: 0.25rem 0; }
+.status:empty, .error:empty, .muted:empty, .raised:empty { display: none; }
+
+.warning {
+  background: var(--s1-bg); color: var(--ink); border-left: 4px solid var(--alert);
+  padding: 0.6rem 0.85rem; border-radius: var(--radius); margin: 1.25rem 0 0;
+}
+
+/* 5. Boutons et champs */
+button, input[type="text"], input[type="datetime-local"] {
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.5rem 0.8rem;
+}
+button { cursor: pointer; font-weight: 600; }
+button:hover { border-color: var(--ink); }
+button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+button.danger { color: var(--alert); border-color: var(--alert); }
+input[type="text"] { width: min(100%, 22rem); font-family: var(--mono); }
+
+.field { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+
+/* 6. Étapes */
+.step {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: calc(var(--radius) * 1.5);
+  padding: 1.25rem; margin: 1.5rem 0;
+}
+
+/* 6.1 Critères : une grille de 4 niveaux + « je ne sais pas » */
+.criteria { display: grid; gap: 1rem; }
+.criterion {
+  border: 0; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); gap: 0.4rem;
+}
+.criterion legend { font-weight: 700; margin-bottom: 0.4rem; }
+
+.option {
+  display: grid; grid-template-columns: auto auto 1fr; align-items: start; gap: 0.4rem;
+  border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.5rem 0.6rem; cursor: pointer;
+  font-size: 0.92rem; line-height: 1.35;
+}
+.option input { margin: 0.15rem 0 0; }
+.option-level { font: 700 0.8rem/1.4 var(--mono); }
+.option[data-level="S1"] .option-level { color: var(--s1); }
+.option[data-level="S2"] .option-level { color: var(--s2); }
+.option[data-level="S3"] .option-level { color: var(--s3); }
+.option[data-level="S4"] .option-level { color: var(--s4); }
+.option:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.option[data-level="S1"]:has(input:checked) { background: var(--s1-bg); }
+.option[data-level="S2"]:has(input:checked) { background: var(--s2-bg); }
+.option[data-level="S3"]:has(input:checked) { background: var(--s3-bg); }
+.option[data-level="S4"]:has(input:checked) { background: var(--s4-bg); }
+
+/* 6.2 Résultat */
+.result { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--rule); }
+.result-label { margin: 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.badge {
+  display: inline-block; margin: 0.35rem 0; padding: 0.35rem 0.8rem; border-radius: 999px;
+  font: 800 1.35rem/1.2 var(--font); border: 2px solid currentColor;
+}
+.badge[data-level="none"] { color: var(--muted); }
+.badge[data-level="S1"] { color: var(--s1); background: var(--s1-bg); }
+.badge[data-level="S2"] { color: var(--s2); background: var(--s2-bg); }
+.badge[data-level="S3"] { color: var(--s3); background: var(--s3-bg); }
+.badge[data-level="S4"] { color: var(--s4); background: var(--s4-bg); }
+.raised { font-weight: 600; color: var(--alert); }
+
+.timelines { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+.timelines th, .timelines td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.timelines th { font-weight: 500; color: var(--muted); width: 60%; }
+.timelines td { font-weight: 700; }
+
+/* 6.3 Cartes des playbooks */
+.playbooks { border: 0; margin: 0; padding: 0; }
+#playbooks { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 0.6rem; }
+.card {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.6rem; align-items: start;
+  border: 1px solid var(--rule); border-radius: var(--radius); padding: 0.75rem; cursor: pointer;
+}
+.card:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); background: var(--paper); }
+.card input { margin-top: 0.25rem; }
+.card-body { display: grid; gap: 0.25rem; }
+.card-meta { font: 600 0.8rem/1.3 var(--mono); color: var(--muted); }
+.card-when { font-size: 0.9rem; line-height: 1.4; }
+.card-link { font-size: 0.85rem; }
+
+/* 6.4 Échéances */
+.awareness label { font-weight: 600; display: block; margin-bottom: 0.35rem; }
+.dues { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 0.5rem; }
+.due {
+  display: grid; gap: 0.15rem; padding: 0.65rem 0.8rem;
+  border: 1px solid var(--rule); border-left-width: 5px; border-radius: var(--radius);
+}
+.due-name { font-weight: 700; }
+.due-left { font: 700 1rem/1.3 var(--mono); }
+.due-at, .due-who { font-size: 0.88rem; color: var(--muted); }
+.due[data-status="pending"] { border-left-color: var(--s4); }
+.due[data-status="soon"] { border-left-color: var(--s2); background: var(--s2-bg); }
+.due[data-status="overdue"] { border-left-color: var(--s1); background: var(--s1-bg); }
+.due[data-status="overdue"] .due-left { color: var(--s1); }
+.due[data-status="untimed"] { border-left-color: var(--rule); }
+
+/* 6.5 Actions à cocher */
+.bar { height: 0.6rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--s4); transition: width 0.2s ease; }
+@media (prefers-reduced-motion: reduce) { .bar span { transition: none; } }
+
+.section { border: 1px solid var(--rule); border-radius: var(--radius); margin: 0.75rem 0; }
+.section summary {
+  display: flex; justify-content: space-between; gap: 1rem; cursor: pointer;
+  padding: 0.6rem 0.8rem; font-weight: 700;
+}
+.count { font: 600 0.85rem/1.5 var(--mono); color: var(--muted); }
+.actions-list { list-style: none; margin: 0; padding: 0 0.8rem 0.6rem; }
+.action {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.6rem; padding: 0.4rem 0;
+  border-top: 1px solid var(--rule); cursor: pointer;
+}
+.action input { margin-top: 0.25rem; }
+.action:has(input:checked) > span:first-of-type { color: var(--muted); text-decoration: line-through; }
+.stamp { grid-column: 2; font: 0.8rem/1.3 var(--mono); color: var(--s4); }
+.stamp:empty { display: none; }
+
+/* 6.6 Rapport et enregistrement */
+#reference-label { font-weight: 600; display: block; margin-bottom: 0.35rem; }
+.save { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--rule); }
+.switch { display: inline-flex; gap: 0.5rem; align-items: center; font-weight: 600; cursor: pointer; }
+
+/* 7. Petits écrans */
+@media (max-width: 34rem) {
+  .step { padding: 1rem; }
+  .criterion { grid-template-columns: 1fr; }
+}

@@ -2,7 +2,8 @@
 # Intégration continue : à chaque push sur main et à chaque Pull Request,
 #  1. la documentation est vérifiée (fiches, parité FR/EN, liens), puis exportée en JSON ;
 #  2. l'outil de vérification est testé ;
-#  3. son code est analysé (style, logique, sécurité).
+#  3. son code est analysé (style, logique, sécurité) ;
+#  4. l'interface web est typée, testée sur les vrais exports, puis construite.
 # ─────────────────────────────────────────────────────────────
 name: Vérifications
 
@@ -102,3 +103,43 @@ jobs:
 
             - name: Formatage
               run: ruff format --check .
+
+    # ─── L'interface web ──────────────────────────────────────
+    web:
+        name: Interface web · Node 24
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Récupérer le code
+              uses: actions/checkout@v7
+              with:
+                  persist-credentials: false
+
+            - name: Installer Python
+              uses: actions/setup-python@v7
+              with:
+                  python-version: "3.14"
+
+            # L'interface lit les exports JSON : on les génère depuis la documentation du commit
+            - name: Générer les données de l'interface
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -e .
+                  playbook-export --lang fr -o web/data/playbooks.fr.json
+                  playbook-export --lang en -o web/data/playbooks.en.json
+
+            - name: Installer Node.js 24
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 24
+                  cache: npm
+                  cache-dependency-path: web/package-lock.json
+
+            # npm ci : installation exacte depuis package-lock.json, sans le modifier
+            - name: Typer, tester, construire
+              working-directory: web
+              run: |
+                  npm ci
+                  npm run typecheck
+                  npm test
+                  npm run build

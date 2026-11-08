@@ -140,6 +140,34 @@ playbook-export --lang en -o playbooks.en.json
 }
 ```
 
+## Web interface
+
+The [`web/`](web/) folder holds an interface for the moment an incident starts, running entirely in
+the browser:
+
+1. **assess the severity** on the five criteria of D01 (the most severe criterion wins; a playbook
+   can raise the level, never lower it) and show the internal timelines for that level;
+2. **pick the playbook** using its "When to use it" paragraph;
+3. **track the legal deadlines** of D04 from the time the incident became known (CNIL 72 h,
+   NIS 2 24 h and 72 h, police complaint 72 h);
+4. **tick the actions** of the eight phases, each one timestamped;
+5. **export a Markdown report** (times in UTC), to reuse in the incident report (T01).
+
+It reads the JSON exports of this documentation, in French and English. Security choices: strict
+content security policy (no request outside the site), no cookies or analytics, **nothing is kept
+by default**; local saving is an opt-in option. The proposed severity remains a **decision aid**.
+
+```powershell
+# Requirements: Node.js 24 and the Python tool installed (see above)
+playbook-export --lang en -o web/data/playbooks.en.json
+playbook-export --lang fr -o web/data/playbooks.fr.json
+cd web
+npm ci                 # development dependencies, exact versions
+npm test               # tests (including the real exports in web/data/)
+npm run build          # compiles src/*.ts into dist/
+python -m http.server 8000   # then open http://localhost:8000
+```
+
 ## License
 
 [MIT](LICENSE) © Aïcha Imène Dahoumane — free to adapt for your organisation.
