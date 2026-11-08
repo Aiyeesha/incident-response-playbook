@@ -6,6 +6,13 @@ versionnage [sémantique](https://semver.org/lang/fr/).
 Ce dépôt reprend et fusionne deux anciens dépôts (`incident-response-playbook` en anglais et
 `playbook-reponse-incidents` en français), archivés en privé.
 
+## [Non publié]
+
+### Maintenance
+- `actions/setup-node` passe de la v5 à la v7 dans les deux workflows (vérifications et publication).
+- Dependabot ignore les versions majeures de `@types/node` : l'interface cible Node.js 24, et des types
+  plus récents décriraient des fonctions absentes de cette version sans que le typage ne le signale.
+
 ## [1.1.0] — 2026-11-08
 
 Interface web publiée sur GitHub Pages : https://aiyeesha.github.io/incident-response-playbook/

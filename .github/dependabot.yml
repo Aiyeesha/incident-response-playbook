@@ -18,3 +18,9 @@ updates:
       directory: "/web"
       schedule:
           interval: "weekly"
+      ignore:
+          # L'interface cible Node.js 24 (package.json, CI, Pages) : les types d'une version
+          # majeure plus récente décriraient des fonctions absentes de Node.js 24.
+          # À lever en même temps que le passage à une nouvelle version de Node.js.
+          - dependency-name: "@types/node"
+            update-types: ["version-update:semver-major"]
